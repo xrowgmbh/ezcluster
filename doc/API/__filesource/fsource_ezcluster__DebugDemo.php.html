@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml">
+		<head>
+			<!-- template designed by Marco Von Ballmoos -->
+			<title>File Source for DebugDemo.php</title>
+			<link rel="stylesheet" href="../media/stylesheet.css" />
+			<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'/>
+		</head>
+		<body>
+						<h1>Source for file DebugDemo.php</h1>
+<p>Documentation is available at <a href="../ezcluster/_DebugDemo.php.html">DebugDemo.php</a></p>
+<div class="src-code">
+<div class="src-code"><ol><li><div class="src-line"><a name="a1"></a>&lt;HTML&gt;</div></li>
+<li><div class="src-line"><a name="a2"></a>&lt;BODY&gt;</div></li>
+<li><div class="src-line"><a name="a3"></a>&lt;H1&gt;Debug&nbsp;Demo&lt;/H1&gt;</div></li>
+<li><div class="src-line"><a name="a4"></a>&lt;table&nbsp;border=&quot;1&quot;&nbsp;width=&quot;700&quot;&gt;</div></li>
+<li><div class="src-line"><a name="a5"></a>&lt;tr&nbsp;bgcolor=&quot;red&quot;&gt;</div></li>
+<li><div class="src-line"><a name="a6"></a>&nbsp;&nbsp;&nbsp;&nbsp;&lt;th&gt;Name&lt;/th&gt;</div></li>
+<li><div class="src-line"><a name="a7"></a>&nbsp;&nbsp;&nbsp;&nbsp;&lt;th&gt;Address&lt;/th&gt;</div></li>
+<li><div class="src-line"><a name="a8"></a>&nbsp;&nbsp;&nbsp;&nbsp;&lt;th&gt;Phone&lt;/th&gt;</div></li>
+<li><div class="src-line"><a name="a9"></a>&lt;/tr&gt;</div></li>
+<li><div class="src-line"><a name="a10"></a><span class="src-php">&lt;?php</span></div></li>
+<li><div class="src-line"><a name="a11"></a><span class="src-var">$db&nbsp;</span>=&nbsp;<span class="src-key">array</span><span class="src-sym">(</span></div></li>
+<li><div class="src-line"><a name="a12"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">array&nbsp;</span><span class="src-sym">(</span><span class="src-str">&quot;John&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;E&nbsp;10th&nbsp;St.,&nbsp;NYC,&nbsp;NY&nbsp;23742&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;(212)&nbsp;555-4456&quot;</span><span class="src-sym">)</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line"><a name="a13"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">array&nbsp;</span><span class="src-sym">(</span><span class="src-str">&quot;Francois&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;12&nbsp;Bd.&nbsp;de&nbsp;Grenelle,&nbsp;Paris,&nbsp;74897&quot;</span><span class="src-sym">,</span><span class="src-str">&quot;(33)&nbsp;433-544&quot;</span><span class="src-sym">)</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line"><a name="a14"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">array&nbsp;</span><span class="src-sym">(</span><span class="src-str">&quot;Klaus&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;312&nbsp;Beethoven&nbsp;St.,&nbsp;Frankfurt,&nbsp;Germany&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;(44)&nbsp;332-8065&quot;</span><span class="src-sym">)</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line"><a name="a15"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">array&nbsp;</span><span class="src-sym">(</span><span class="src-str">&quot;Shirly&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;72&nbsp;Independence&nbsp;St.,&nbsp;Tel&nbsp;Aviv,&nbsp;Israel&nbsp;67283&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;(972)&nbsp;156-7777&quot;</span><span class="src-sym">)</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line"><a name="a16"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">array&nbsp;</span><span class="src-sym">(</span><span class="src-str">&quot;Bill&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;127&nbsp;Maine&nbsp;St.,&nbsp;San&nbsp;Francisco,&nbsp;CA&nbsp;90298&quot;</span><span class="src-sym">,&nbsp;</span><span class="src-str">&quot;(415)&nbsp;555-6565&quot;</span><span class="src-sym">)</span></div></li>
+<li><div class="src-line"><a name="a17"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">)</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a18"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a19"></a><span class="src-doc">/**</span></div></li>
+<li><div class="src-line"><a name="a20"></a><span class="src-doc">&nbsp;*&nbsp;</span><span class="src-doc-coretag">@return&nbsp;</span><span class="src-doc-type">string&nbsp;</span></div></li>
+<li><div class="src-line"><a name="a21"></a><span class="src-doc">&nbsp;*&nbsp;</span><span class="src-doc-coretag">@param&nbsp;</span><span class="src-doc-type">int&nbsp;</span><span class="src-doc-var">$i&nbsp;</span></div></li>
+<li><div class="src-line"><a name="a22"></a><span class="src-doc">&nbsp;*&nbsp;</span><span class="src-doc-tag">@desc</span><span class="src-doc">&nbsp;Returns&nbsp;'white'&nbsp;for&nbsp;even&nbsp;numbers&nbsp;and&nbsp;'yellow'&nbsp;for&nbsp;odd&nbsp;numbers</span></div></li>
+<li><div class="src-line"><a name="a23"></a><span class="src-doc">&nbsp;*/</span></div></li>
+<li><div class="src-line"><a name="a24"></a><span class="src-key">function&nbsp;</span><a href="../ezcluster/_DebugDemo.php.html#functionrow_color">row_color</a><span class="src-sym">(</span><span class="src-var">$i</span><span class="src-sym">)</span></div></li>
+<li><div class="src-line"><a name="a25"></a><span class="src-sym">{</span></div></li>
+<li><div class="src-line"><a name="a26"></a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-var">$bgcolor1&nbsp;</span>=&nbsp;<span class="src-str">&quot;white&quot;</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a27"></a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-var">$bgcolor2&nbsp;</span>=&nbsp;<span class="src-str">&quot;yellow&quot;</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a28"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a29"></a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">if&nbsp;</span><span class="src-sym">(&nbsp;(</span><span class="src-var">$i&nbsp;</span>%&nbsp;<span class="src-num">2</span><span class="src-sym">)&nbsp;</span>==&nbsp;<span class="src-num">0&nbsp;</span><span class="src-sym">)&nbsp;</span><span class="src-sym">{</span></div></li>
+<li><div class="src-line"><a name="a30"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">return&nbsp;</span><span class="src-var">$bgcolor1</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a31"></a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}&nbsp;</span><span class="src-key">else&nbsp;</span><span class="src-sym">{</span></div></li>
+<li><div class="src-line"><a name="a32"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">return&nbsp;</span><span class="src-var">$bgcolor2</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a33"></a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line"><a name="a34"></a><span class="src-sym">}</span></div></li>
+<li><div class="src-line"><a name="a35"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a36"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a37"></a><span class="src-doc">/**</span></div></li>
+<li><div class="src-line"><a name="a38"></a><span class="src-doc">&nbsp;*&nbsp;</span><span class="src-doc-coretag">@return&nbsp;</span><span class="src-doc-type">void&nbsp;</span></div></li>
+<li><div class="src-line"><a name="a39"></a><span class="src-doc">&nbsp;*&nbsp;</span><span class="src-doc-tag">@desc</span><span class="src-doc">&nbsp;Displays&nbsp;a&nbsp;table&nbsp;of&nbsp;the&nbsp;workers</span></div></li>
+<li><div class="src-line"><a name="a40"></a><span class="src-doc">&nbsp;*/</span></div></li>
+<li><div class="src-line"><a name="a41"></a><span class="src-key">function&nbsp;</span><a href="../ezcluster/_DebugDemo.php.html#functiondisplay_workers">display_workers</a><span class="src-sym">(</span><span class="src-sym">)</span></div></li>
+<li><div class="src-line"><a name="a42"></a><span class="src-sym">{</span></div></li>
+<li><div class="src-line"><a name="a43"></a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">global&nbsp;</span><span class="src-var">$db</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a44"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a45"></a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-key">for&nbsp;</span><span class="src-sym">(</span><span class="src-var">$i</span>=<span class="src-num">0</span><span class="src-sym">,&nbsp;</span><span class="src-var">$n</span>=<a href="http://www.php.net/count">count</a><span class="src-sym">(</span><span class="src-var">$db</span><span class="src-sym">)</span><span class="src-sym">;&nbsp;</span><span class="src-var">$i</span>&lt;<span class="src-var">$n</span><span class="src-sym">;&nbsp;</span><span class="src-var">$i</span>++<span class="src-sym">)&nbsp;</span><span class="src-sym">{</span></div></li>
+<li><div class="src-line"><a name="a46"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-var">$worker_data&nbsp;</span>=&nbsp;<span class="src-var">$db</span><span class="src-sym">[</span><span class="src-var">$i</span><span class="src-sym">]</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a47"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a48"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-var">$worker_name&nbsp;</span>=&nbsp;<span class="src-var">$worker_data</span><span class="src-sym">[</span><span class="src-num">0</span><span class="src-sym">]</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a49"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-var">$worker_address&nbsp;</span>=&nbsp;<span class="src-var">$worker_data</span><span class="src-sym">[</span><span class="src-num">1</span><span class="src-sym">]</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a50"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-var">$worker_phone&nbsp;</span>=&nbsp;<span class="src-var">$worker_data</span><span class="src-sym">[</span><span class="src-num">2</span><span class="src-sym">]</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a51"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;<span class="src-str">&quot;&lt;tr&nbsp;bgcolor=\&quot;&quot;</span>.<a href="../ezcluster/_DebugDemo.php.html#functionrow_color">row_color</a><span class="src-sym">(</span><span class="src-var">$i</span><span class="src-sym">)</span>.<span class="src-str">&quot;\&quot;&gt;\n&quot;</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a52"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;<span class="src-str">&quot;</span><span class="src-str">&lt;td&gt;<span class="src-var">$worker_name</span>&lt;/td&gt;\n</span><span class="src-str">&quot;</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a53"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;<span class="src-str">&quot;</span><span class="src-str">&lt;td&gt;<span class="src-var">$worker_address</span>&lt;/td&gt;\n</span><span class="src-str">&quot;</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a54"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;<span class="src-str">&quot;</span><span class="src-str">&lt;td&gt;<span class="src-var">$worker_phone</span>&lt;/td&gt;\n</span><span class="src-str">&quot;</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a55"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print&nbsp;<span class="src-str">&quot;&lt;/tr&gt;\n&quot;</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a56"></a>&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line"><a name="a57"></a><span class="src-sym">}</span></div></li>
+<li><div class="src-line"><a name="a58"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a59"></a><a href="../ezcluster/_DebugDemo.php.html#functiondisplay_workers">display_workers</a><span class="src-sym">(</span><span class="src-sym">)</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a60"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a61"></a>echo&nbsp;<span class="src-var">$undefined_variable</span><span class="src-sym">;</span></div></li>
+<li><div class="src-line"><a name="a62"></a><span class="src-php">?&gt;</span></div></li>
+<li><div class="src-line"><a name="a63"></a>&nbsp;</div></li>
+<li><div class="src-line"><a name="a64"></a>&lt;/table&gt;</div></li>
+<li><div class="src-line"><a name="a65"></a>&lt;/BODY&gt;</div></li>
+<li><div class="src-line"><a name="a66"></a>&lt;/HTML&gt;</div></li>
+</ol></div>
+</div>
+	<p class="notes" id="credit">
+		Documentation generated on Thu, 27 Oct 2011 22:32:24 +0200 by <a href="http://www.phpdoc.org" target="_blank">phpDocumentor 1.4.1</a>
+	</p>
+	</body>
+</html>

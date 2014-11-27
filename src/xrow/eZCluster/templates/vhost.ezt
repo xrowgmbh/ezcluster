@@ -1,0 +1,80 @@
+
+<VirtualHost *:8080>
+
+ServerAdmin root@localhost
+ServerName elasticsearch.*
+ServerAlias kibana.*
+DocumentRoot /var/www/kibana
+<Directory />
+Options FollowSymLinks
+AllowOverride None
+</Directory>
+<Directory /var/www/kibana>
+Options -Indexes FollowSymLinks -MultiViews
+AllowOverride all
+Order allow,deny
+allow from all
+</Directory>
+
+
+# Set global proxy timeouts
+<Proxy http://localhost:9200>
+ProxySet connectiontimeout=5 timeout=90
+</Proxy>
+
+# Proxy for _aliases and .*/_search
+<LocationMatch "^(/_aliases|.*/_search|.*/_mapping)$">
+ProxyPassMatch http://localhost:9200
+ProxyPassReverse http://localhost:9200
+</LocationMatch>
+
+# Proxy for kibana-int/\{dashboard,temp\} stuff (if you don't want auth on /, then you will want these to be protected)
+<LocationMatch "^(/kibana-int/dashboard/|/kibana-int/temp).*$">
+ProxyPassMatch http://localhost:9200
+ProxyPassReverse http://localhost:9200
+</LocationMatch>
+
+#RewriteEngine On
+#RewriteCond %\{HTTPS\} off
+#RewriteRule (.*) https://%\{HTTP_HOST\}%\{REQUEST_URI\}
+
+</VirtualHost>
+
+NameVirtualHost *:8080
+
+{use $vhosts}
+
+{foreach $vhosts as $vhost}
+<VirtualHost *:8080>
+DocumentRoot {$vhost->dir}
+ServerName {$vhost->name}.local
+ServerAlias nocache.{$vhost->name}.local
+ServerAlias *{$vhost->name}.*
+ServerAlias {$vhost->name}.*
+{foreach $vhost->hosts as $key => $host}
+ServerAlias {$host}
+{/foreach}
+
+AcceptPathInfo On
+<Directory {$vhost->dir}>
+  Options FollowSymLinks
+  AllowOverride All
+</Directory>
+
+CustomLog /dev/null common
+</VirtualHost>
+{/foreach}
+
+<VirtualHost _default_:8080>
+DocumentRoot /usr/share/ezcluster/html        
+
+<Directory /usr/share/ezcluster/html>        
+  Options FollowSymLinks  
+  AllowOverride None  
+</Directory>                
+DirectoryIndex index.php
+CustomLog /dev/null common
+ServerName localhost
+ServerAlias * 
+</VirtualHost>      
+

@@ -1,0 +1,9 @@
+/var/www/sites/*/cron.log {
+        size 5M
+        missingok
+        rotate 10
+        compress
+        create 640 ec2-user ec2-user
+        delaycompress
+        copytruncate
+}

@@ -1,0 +1,8 @@
+#!/bin/sh
+PHPBIN="/usr/bin/php"
+if [ -x "/usr/local/zend/bin/php" ]
+then
+ PHPBIN="/usr/local/zend/bin/php"
+fi
+
+$PHPBIN /usr/share/ezcluster/bin/ezcluster.php ezcluster $*

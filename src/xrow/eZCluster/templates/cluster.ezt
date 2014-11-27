@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<cluster name="ezcluster" config_version="1">
+    <!-- Info: http://git.fedorahosted.org/git/?p=cluster.git;a=blob_plain;f=doc/cluster_conf.html;hb=RHEL6 -->
+    <cman two_node="1" expected_votes="1"/>
+    <logging debug="on"/>
+    <clusternodes>
+{use $backends}
+{foreach $backends as $key => $backend}
+        <clusternode name="{$backend->fqdn}" nodeid="{$key}" votes="1" >
+            <!--<fence>
+                <method name="storage">
+                    <device nodename="{$backend->host}" name="storage"/>
+                </method>
+            </fence>-->
+        </clusternode>
+{/foreach}
+    </clusternodes>
+<!--    <fencedevices>
+        <fencedevice agent="fence_manual" name="storage"/>
+    </fencedevices> -->
+    <rm>
+    <failoverdomains/>
+    <resources/>
+    </rm>
+</cluster>

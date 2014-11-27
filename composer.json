@@ -1,0 +1,18 @@
+{
+    "require": {
+        "symfony/console": "2.*",
+        "symfony/debug": "2.*",
+		"aws/aws-sdk-php": "2.*",
+		"amazonwebservices/aws-sdk-for-php": "*",
+		"zetacomponents/base": "*",
+        "zetacomponents/template": "*",
+        "zetacomponents/database": "*",
+        "zetacomponents/system-information": "*",
+        "zetacomponents/console-tools": "dev-master",
+        "andres-montanez/magallanes": "dev-master",
+        "herzult/php-ssh": "1.*@dev"
+    },
+    "autoload": {
+        "psr-0": { "": "src/" }
+    }
+}
