@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aws revision="1">
+    <cluster lb="xrow" update="yes">
+        <instance name="localhost">
+            <role>web</role>
+            <role>admin</role>
+            <!-- <role>storage</role> -->
+            <role>solr</role>
+            <role>database</role>
+        </instance>
+        <rpm>ezfind-solr</rpm>
+        <database-setting name="wait_timeout">50</database-setting>
+        <environment name="5.4" docroot="web">
+            <cron timing="* * * * *" group="frequent" />
+            <cron timing="1 * * * *" group="hourly" />
+            <cron timing="1 1 * * *" group="daily" />
+            <cron timing="5 2 * * 1" group="weekly" />
+            <cron timing="5 3 1 * *" group="monthly" />
+            <bootstrap>
+                <script><![CDATA[
+#!/bin/sh
+VERSION="5.4"
+SOLR_URL="[SOLR_URL]"
+DATABASE_SERVER="[DATABASE_SERVER]"
+DATABASE_USER="[DATABASE_USER]"
+DATABASE_PASSWORD="[DATABASE_PASSWORD]"
+DATABASE_NAME="[DATABASE_NAME]"
+DFS_DATABASE_SERVER="[DFS_DATABASE_SERVER]"
+DFS_DATABASE_USER="[DFS_DATABASE_USER]"
+DFS_DATABASE_PASSWORD="[DFS_DATABASE_PASSWORD]"
+DFS_DATABASE_NAME="[DFS_DATABASE_NAME]"
+DFS_MOUNT="[DFS_MOUNT]"
+AWS_KEY="[AWS_KEY]"
+AWS_SECRETKEY="[AWS_SECRETKEY]"
+AWS_ACCOUNTID="[AWS_ACCOUNTID]"
+PACKAGES="http:\/\/packages.ez.no\/ezpublish\/${VERSION}\/${VERSION}.0\/"
+SCRIPT=`readlink -f $0`
+SCRIPTDIR=$(dirname ${SCRIPT})
+INSTALLATION_ID=""
+LICENCE_KEY=""
+wget --no-check-certificate https://raw.githubusercontent.com/xrowgmbh/xrowvagrant/master/ezcluster/scripts/54.sh
+source ./54.sh
+]]></script>
+            </bootstrap>
+            <database dsn="mysql://xrow:password@localhost/ezpublish"/>
+            <storage dsn="mysql://xrow:password@localhost/ezpublish" mount="/mnt/nas/live"/>
+            <hostname>stable.*</hostname>
+            <hostname>localhost</hostname>
+        </environment>
+        <environment name="plain"> 
+            <bootstrap>
+                <script><![CDATA[
+#!/bin/sh
+wget --no-check-certificate https://raw.githubusercontent.com/xrowgmbh/xrowvagrant/master/ezcluster/scripts/plain.sh
+source ./plain.sh
+]]></script>
+            </bootstrap>
+            <database dsn="mysql://xrow:password@localhost/plain"/>
+            <storage dsn="mysql://xrow:password@localhost/plain" mount="/mnt/nas/live"/>
+            <hostname>plain.*</hostname>
+        </environment>
+        <!-- Test SSL certificate -->
+        <certificate name="ssl">
+-----BEGIN CERTIFICATE-----
+MIIBrzCCARgCCQCfMsCGwq31yzANBgkqhkiG9w0BAQUFADAcMRowGAYDVQQDExF3
+d3cuZXhjZWxpYW5jZS5mcjAeFw0xMjA5MDQwODU3MzNaFw0xMzA5MDQwODU3MzNa
+MBwxGjAYBgNVBAMTEXd3dy5leGNlbGlhbmNlLmZyMIGfMA0GCSqGSIb3DQEBAQUA
+A4GNADCBiQKBgQDFxSTUwX5RD4AL2Ya5t5PAaNjcwPa3Km40uaPKSHlU8AMydxC1
+wB4L0k3Ms9uh98R+kIJS+TxdfDaYxk/GdDYI1CMm4TM+BLHGAVA2DeNf2hBhBRKb
+TAgxCxXwORJQSB/B+1r0/ZiQ2ig5Jzr8xGHz+tBsHYZ+t+RmjZPQFjnlewIDAQAB
+MA0GCSqGSIb3DQEBBQUAA4GBABqVuloGWHReSGLY1yAs20uhJ3j/9SvtoueyFBag
+z5jX4BNO/4yhpKEpCGmzYtjr7us3v/s0mKoIVvAgah778rCZW3kF1Y6xR6TYqZna
+1ryKB50/MJg9PC4LNL+sAu+WSslOf6+6Ru5N3JjhIZST8edJsGDi6/5HTKoqyvkp
+wOMn
+-----END CERTIFICATE-----
+-----BEGIN RSA PRIVATE KEY-----
+MIICXgIBAAKBgQDFxSTUwX5RD4AL2Ya5t5PAaNjcwPa3Km40uaPKSHlU8AMydxC1
+wB4L0k3Ms9uh98R+kIJS+TxdfDaYxk/GdDYI1CMm4TM+BLHGAVA2DeNf2hBhBRKb
+TAgxCxXwORJQSB/B+1r0/ZiQ2ig5Jzr8xGHz+tBsHYZ+t+RmjZPQFjnlewIDAQAB
+AoGBALUeVhuuVLOB4X94qGSe1eZpXunUol2esy0AMhtIAi4iXJsz5Y69sgabg/qL
+YQJVOZO7Xk8EyB7JaerB+z9BIFWbZwS9HirqR/sKjjbhu/rAQDgjVWw2Y9sjPhEr
+CEAvqmQskT4mY+RW4qz2k8pe4HKq8NAFwbe8iNP7AySP3K4BAkEA4ZPBagtlJzrU
+7Tw4BvQJhBmvNYEFviMScipHBlpwzfW+79xvZhTxtsSBHAM9KLbqO33VmJ3C/L/t
+xukW8SO6ewJBAOBxU0TfS0EzcRQJ4sn78G6hTjjLwJM2q4xuSwLQDVaWwtXDI6HE
+jb7HePaGBGnOrlXxEOFQZCVdDaLhX0zcEQECQQDHcvc+phioGRKPOAFp1HhdfsA2
+FIBZX3U90DfAXFMFKFXMiyFMJxSZPyHQ/OQkjaaJN3eWW1c+Vw0MJKgOSkLlAkEA
+h8xpqoFEgkXCxHIa00VpuzZEIt89PJVWhJhzMFd7yolbh4UTeRx4+xasHNUHtJFG
+MF+0a+99OJIt3wBn7hQ1AQJACScT3p6zJ4llm59xTPeOYpSXyllR4GMilsGIRNzT
+RGYxcvqR775RkAgE+5DHmAkswX7TBaxcO6+C1+LJEwFRxw==
+-----END RSA PRIVATE KEY-----
+        </certificate>
+    </cluster>
+</aws>
