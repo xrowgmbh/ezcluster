@@ -185,7 +185,15 @@ class CloudSDK
         }
         else
         {
-            throw new \Exception( "Can`t init CloudSDK. " . self::CONFIG_FILE . " is missing." . __METHOD__ );
+            if ( file_exists( self::CONFIG_FILE.".dist" ) )
+            {
+                copy(self::CONFIG_FILE.".dist", self::CONFIG_FILE);
+                self::$config = new SimpleXMLElement( file_get_contents( self::CONFIG_FILE ) );
+            }
+            else
+            {
+                throw new \Exception( "Can`t init CloudSDK. " . self::CONFIG_FILE . " is missing." . __METHOD__ );
+            }
         }
         if ( self::$region === null and self::$cloud === self::CLOUD_TYPE_AWS )
         {
