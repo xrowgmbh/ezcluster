@@ -104,8 +104,6 @@ class ClusterNode extends Resources\instance
         unlink('/tmp/certificate.pem');
     }
 
-
-
     public function init()
     {
         $certs = $this->getCertificates();
@@ -839,7 +837,7 @@ EOD;
                         // drbdadm -- --overwrite-data-of-peer primary storage
                     }
                     
-                    system('/etc/init.d/drbd start', $return);
+                    system('systemctl start drbd', $return);
                     
                     // @TODO http://www.drbd.org/users-guide/s-gfs-create.html
                     // system( 'mount -t gfs2 -o defaults,noexec,noatime,noauto /dev/drbd/by-res/storage /mnt/storage', $return );
@@ -875,7 +873,7 @@ EOD;
                         $createdMeta = true;
                     }
                     
-                    system('/etc/init.d/drbd start', $return);
+                    system('systemctl start drbd', $return);
                     system('mount -t ext4 -o defaults,noexec,noatime,noauto /dev/drbd/by-res/storage /mnt/storage', $return);
                     if ($return == 32 && isset($createdMeta) and $createdMeta == true) {
                         system('echo "y" | mkfs -t ext4 /dev/drbd/by-res/storage');
@@ -913,8 +911,8 @@ EOD;
             }
             if ($ok === true) {
                 file_put_contents(self::EXPORTS_FILE, "/mnt/storage *(rw,sync,no_acl,all_squash,anonuid=48,anongid=48)\n");
-                system('/etc/init.d/nfslock start');
-                system('/etc/init.d/nfs start');
+                system('systemctl start nfslock');
+                system('systemctl start nfs');
                 @mkdir('/mnt/nas', 0755);
                 system('mount -t nfs -o rw ' . $this->getStorageHost() . ':/mnt/storage /mnt/nas');
             }
@@ -968,8 +966,8 @@ EOD;
             }
             $t->send->datadir = '/mnt/storage/mysql';
             $t->send->settings = self::getDatabaseSettings(false);
-            file_put_contents('/etc/my.cnf', $t->process('my.ezt'));
-            
+            file_put_contents('/etc/my.cnf.d/ezcluster.cnf', $t->process('my.ezt'));
+
             // Ram Disk
             if (self::getRAMDiskSize()) {
                 if (! is_dir('/var/mysql.tmp')) {
@@ -979,11 +977,8 @@ EOD;
                     system("mount -t tmpfs -o size=" . (int) self::getRAMDiskSize() . "M,mode=0775,noatime,nodiratime tmpfs /var/mysql.tmp");
                 }
             }
-            if (file_exists('/etc/init.d/mysqld')) {
-                system('/etc/init.d/mysqld start');
-            } else {
-                system('/etc/init.d/mysql start');
-            }
+            system('systemctl start mariadb');
+
             if (isset($pass)) {
                 system("mysql -e\"SET PASSWORD FOR 'root'@'localhost' = PASSWORD('');\" -u root -p$pass");
             }
@@ -1049,11 +1044,11 @@ zend_debugger.enable_coverage=0
 EOD;
                 file_put_contents(self::PHP_DEBUGGER_INI, $debug);
             }
-            system('/etc/init.d/httpd start');
-            system('/etc/init.d/varnish start');
+            system('systemctl start httpd');
+            system('systemctl start varnish');
             usleep(1000000);
-            system('/etc/init.d/varnishncsa start');
-            system('/etc/init.d/haproxy start');
+            system('systemctl start varnishncsa');
+            system('systemctl start haproxy');
             if (! in_array('dev', $services) and $this->isLoadBalancerMember()) {
                 try {
                     $lb = new lb($this->getLB());
@@ -1090,12 +1085,12 @@ EOD;
                 $lb = new lb($this->getLB());
                 $lb->deregister($this);
             }
-            system('/etc/init.d/haproxy stop');
-            system('/etc/init.d/varnishncsa stop');
-            system('/etc/init.d/varnish stop');
-            system('/etc/init.d/httpd stop');
+            system('systemctl stop haproxy');
+            system('systemctl stop varnishncsa');
+            system('systemctl stop varnish');
+            system('systemctl stop httpd');
         }
-        system('/etc/init.d/autofs stop');
+        system('systemctl stop autofs');
         if (in_array('solr', $services) or in_array('solr-slave', $services)) {
             
             system('/etc/init.d/ezfind-solr stop');
@@ -1104,18 +1099,14 @@ EOD;
             }
         }
         if (in_array('database', $services)) {
-            if (file_exists('/etc/init.d/mysqld')) {
-                system('/etc/init.d/mysqld stop');
-            } else {
-                system('/etc/init.d/mysql stop');
-            }
+            system('systemctl stop mariadb');
         }
         if (in_array('storage', $services) or in_array('storage-slave', $services)) {
             // will kill myself
             // ystem( 'killall php' );
-            system('/etc/init.d/nfs stop');
-            system('/etc/init.d/nfslock stop');
-            system('/etc/init.d/drbd stop');
+            system('systemctl stop nfs');
+            system('systemctl stop nfslock');
+            system('systemctl stop drbd');
         /**
          * try
          * {

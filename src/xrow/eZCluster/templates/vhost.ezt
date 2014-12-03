@@ -2,7 +2,8 @@
 <VirtualHost *:8080>
 
 ServerAdmin root@localhost
-ServerName elasticsearch.*
+ServerName elasticsearch.localhost
+ServerAlias elasticsearch.*
 ServerAlias kibana.*
 DocumentRoot /var/www/kibana
 <Directory />
@@ -10,7 +11,7 @@ Options FollowSymLinks
 AllowOverride None
 </Directory>
 <Directory /var/www/kibana>
-Options -Indexes FollowSymLinks -MultiViews
+Options -Indexes -MultiViews
 AllowOverride all
 Order allow,deny
 allow from all
