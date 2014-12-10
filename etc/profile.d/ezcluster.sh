@@ -13,6 +13,16 @@ store-auth-creds = no
 EOL
 fi
 
+if [ ! -d ~/.ssh ]; then
+mkdir ~/.ssh  
+chmod 700 ~/.ssh
+fi
+
+if [ ! -f ~/.ssh/authorized_keys ]; then
+touch ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+fi
+
 grep_output="$(grep -i 'service\@xrow.de' ~/.ssh/authorized_keys)"
 if [ -z "$grep_output" ]; then
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAmKtOFjv/OLjzPP7VyjndOJJvxfzOIEfhJ+FXhiUVTOFFdTMXV2si0rqL3I8ot2mwM8bpeqvQr5zfng0CPOxl8ydkPsRY2qflyKWO19/nV3R/R5z29P+DgyQgfAiK5gbh2mMgdRkLn0MmE2GULKu7OGPUXIgRJpUTBVziySMAcSU= service@xrow.de" >> ~/.ssh/authorized_keys
