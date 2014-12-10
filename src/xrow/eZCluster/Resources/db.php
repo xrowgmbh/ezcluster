@@ -2,6 +2,7 @@
 namespace xrow\eZCluster\Resources;
 
 use xrow\eZCluster\Abstracts;
+use xrow\eZCluster;
 use \ezcDbFactory;
 use Ssh;
 
@@ -18,6 +19,62 @@ class db extends Abstracts\xrowEC2Resource
         return (string) $this->id;
     }
 
+    public function getDatabaseSettings($rds = true)
+    {
+        $settings = array(
+            'wait_timeout' => 60, // Threads will clean up faster, crons might loose conenction to DFS, also see 'interactive_timeout' of mysql
+            'table_open_cache' => 4000, // "Tuning MySQL for eZ Publish" on share.ez.no
+            // not neededfor 5.6 'max_connections' => 400 , # Amount of Nodes x Requests x 2 for NFS
+            'key_buffer_size' => '300M', // "Tuning MySQL for eZ Publish" on share.ez.no
+            'sort_buffer_size' => '2M', // Abe changed 2010-07-30 following "Tuning MySQL for eZ Publish" on share.ez.no
+            'max_allowed_packet' => '16M', // Harmless, only allocated if needed
+            'thread_stack' => '256KB', // Value for 64 BIT Systems
+            'thread_cache_size' => '8', // Higher value for site with many connections ?? Bitte Pr�fen ob nciht h�herer Wert ProSieben 250
+            'myisam-recover' => 'BACKUP', // Full safty
+            'query_cache_type' => '1', // "Tuning MySQL for eZ Publish" on share.ez.no
+            'query_cache_limit' => '4M', // Unsure, if this settings is optimal
+            'query_cache_size' => '64M', // Too small? Abe, 2010-07-30, following mysqltuner.pl recommendations (updated 2010-12-28 following tuning-primer.sh)
+            'join_buffer_size' => '8M', // was 128K? (Recommendation: > 128.0K, or always use indexes with joins)
+            'tmp_table_size' => '800M', // was 16M (?)
+            'max_heap_table_size' => '800M', // was 16M (?)
+            'innodb_buffer_pool_size' => '{DBInstanceClassMemory*8/10}', // depending on size of data in innodb tables, 80% of free memory. Example value '3G'
+            // ill not enable due backwards compatibility
+            // nnodb_log_file_size=256M # The default value is rather small, do not change the value, if you change the value the server will not restart
+            'innodb_flush_log_at_trx_commit' => '2', // should have better performance
+            'innodb_thread_concurrency' => '0', // Lets try not to limit
+            'innodb_flush_method' => 'O_DIRECT', // Looks like the best setting
+            'innodb_file_per_table' => 1,
+            'interactive_timeout' => '60', // If thread start getting too many, the database server may crash. Whole cluster fails.
+            'wait_timeout' => '60'
+        );
+        if (eZCluster\ClusterNode::$config) {
+            $result = eZCluster\ClusterNode::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/database-setting");
+    
+            if ($result !== false) {
+                foreach ($result as $key => $setting) {
+                    $settings[(string) $setting['name']] = trim((string) $setting);
+                }
+            }
+        }
+        if (! $rds) {
+            unset($settings['innodb_buffer_pool_size']);
+            // nset( $settings['key_buffer_size'] );
+            // nset( $settings['max_heap_table_size'] );
+            // nset( $settings['tmp_table_size'] );
+            // settings['innodb_buffer_pool_size'] = '200M';
+        }
+        if (eZCluster\ClusterNode::getRAMDiskSize()) {
+            $settings['tmpdir'] = '/var/mysql.tmp';
+        }
+        $rset = array();
+        foreach ($settings as $key => $setting) {
+            $tmp = new \stdClass();
+            $tmp->key = $key;
+            $tmp->value = $setting;
+            $rset[] = $tmp;
+        }
+        return $rset;
+    }
     static public function exists($name)
     {
         try {

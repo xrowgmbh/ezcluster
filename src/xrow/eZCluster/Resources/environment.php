@@ -94,7 +94,7 @@ class environment
         file_put_contents("/root/.s3cfg", $t->process('s3cfg.ezt'));
         
         if (! file_exists($this->dir)) {
-            eZCluster\ClusterTools::mkdir($this->dir, CloudSDK::USER, 0777);
+            eZCluster\ClusterTools::mkdir($this->dir, eZCluster\CloudSDK::USER, 0777);
         }
         chmod($this->dir, 0777);
         $bootstrap = $this->environment->xpath("bootstrap");
@@ -168,14 +168,6 @@ class environment
                 $patterns[] = '/\[DATABASE_SERVER\]/';
                 $patterns[] = '/\[DATABASE_USER\]/';
                 $patterns[] = '/\[DATABASE_PASSWORD\]/';
-                $patterns[] = '/\[DFS_TYPE\]/';
-                $patterns[] = '/\[DFS_DATABASE_NAME\]/';
-                $patterns[] = '/\[DFS_DATABASE_SERVER\]/';
-                $patterns[] = '/\[DFS_DATABASE_USER\]/';
-                $patterns[] = '/\[DFS_DATABASE_PASSWORD\]/';
-                $patterns[] = '/\[DFS_MOUNT\]/';
-                $patterns[] = '/\[MEMCACHED\]/';
-                $patterns[] = '/\[BUCKET\]/';
                 $patterns[] = '/\[AWS_KEY\]/';
                 $patterns[] = '/\[AWS_SECRETKEY\]/';
                 $patterns[] = '/\[AWS_ACCOUNTID\]/';
@@ -186,6 +178,20 @@ class environment
                 $replacements[] = $dbdetails["hostspec"];
                 $replacements[] = $dbdetails["username"];
                 $replacements[] = $dbdetails["password"];
+                $replacements[] = (string) eZCluster\CloudSDK::$config['access_key'];
+                $replacements[] = (string) eZCluster\CloudSDK::$config['secret_key'];
+                $replacements[] = (string) eZCluster\CloudSDK::$config['account_id'];
+                $replacements[] = $solr;
+                if (isset($dfsdetails))
+                {
+                $patterns[] = '/\[DFS_TYPE\]/';
+                $patterns[] = '/\[DFS_DATABASE_NAME\]/';
+                $patterns[] = '/\[DFS_DATABASE_SERVER\]/';
+                $patterns[] = '/\[DFS_DATABASE_USER\]/';
+                $patterns[] = '/\[DFS_DATABASE_PASSWORD\]/';
+                $patterns[] = '/\[DFS_MOUNT\]/';
+                $patterns[] = '/\[MEMCACHED\]/';
+                $patterns[] = '/\[BUCKET\]/';
                 $replacements[] = $dfsdetails["type"];
                 $replacements[] = $dfsdetails["database"];
                 $replacements[] = $dfsdetails["hostspec"];
@@ -193,11 +199,8 @@ class environment
                 $replacements[] = $dfsdetails["password"];
                 $replacements[] = $dfsdetails["mount"];
                 $replacements[] = $dfsdetails["memcached"];
-                $replacements[] = $dfsdetails["bucket"];
-                $replacements[] = (string) eZCluster\CloudSDK::$config['access_key'];
-                $replacements[] = (string) eZCluster\CloudSDK::$config['secret_key'];
-                $replacements[] = (string) eZCluster\CloudSDK::$config['account_id'];
-                $replacements[] = $solr;
+                $replacements[] = $dfsdetails["bucket"];                
+                }
                 
                 $script = preg_replace($patterns, $replacements, ltrim((string) $script));
                 file_put_contents($file, $script);
