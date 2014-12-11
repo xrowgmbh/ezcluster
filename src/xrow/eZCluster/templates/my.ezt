@@ -1,4 +1,8 @@
 {use $datadir}
+
+[client]
+user=root
+
 [mysqld]
 
 {use $settings}
