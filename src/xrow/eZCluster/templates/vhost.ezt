@@ -50,8 +50,6 @@ NameVirtualHost *:8080
 DocumentRoot {$vhost->dir}
 ServerName {$vhost->name}.local
 ServerAlias nocache.{$vhost->name}.local
-ServerAlias *{$vhost->name}.*
-ServerAlias {$vhost->name}.*
 {foreach $vhost->hosts as $key => $host}
 ServerAlias {$host}
 {/foreach}
