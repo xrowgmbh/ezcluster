@@ -33,7 +33,7 @@ class instance extends Abstracts\xrowEC2Resource
         $class = get_called_class();
         return new $class($id);
     }
-    function current()
+    public static function current()
     {
         $parts = explode(".", php_uname("n"), 2);
         $host = $parts[0];

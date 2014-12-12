@@ -397,7 +397,7 @@ class ClusterNode extends Resources\instance
         }
     }
 
-    public function getSolrMasterHost()
+    public static function getSolrMasterHost()
     {
         $result = CloudSDK::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[role = 'solr']");
         if (isset($result)) {
@@ -410,7 +410,7 @@ class ClusterNode extends Resources\instance
             }
             
             foreach ($instances as $instance) {
-                if ((string) $this->describe()->placement->availabilityZone == (string) $instance->describe()->placement->availabilityZone) {
+                if ((string) instance::current()->describe()->placement->availabilityZone == (string) $instance->describe()->placement->availabilityZone) {
                     return (string) $instance->describe()->privateIpAddress;
                 }
             }
