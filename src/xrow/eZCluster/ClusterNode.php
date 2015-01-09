@@ -320,7 +320,7 @@ class ClusterNode extends Resources\instance
 
     public function getStorageSize()
     {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']/parent::*");
+        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
         if ($result[0]['storage']) {
             return (int) $result[0]['storage'];
         } else {
@@ -328,9 +328,9 @@ class ClusterNode extends Resources\instance
         }
     }
 
-    public function getRAMDiskSize()
+    public static function getRAMDiskSize()
     {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']/parent::*");
+        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
         if ($result[0]['database-ram-disk']) {
             return (string) $result[0]['database-ram-disk'];
         } else {
@@ -338,9 +338,9 @@ class ClusterNode extends Resources\instance
         }
     }
 
-    public function getSitesStorageSize()
+    public static function getSitesStorageSize()
     {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']/parent::*");
+        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
         if ($result[0]['sites_storage']) {
             return (int) $result[0]['sites_storage'];
         } else {
@@ -348,9 +348,9 @@ class ClusterNode extends Resources\instance
         }
     }
 
-    public function getZones()
+    public static function getZones()
     {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']/parent::*");
+        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
         if (isset($result[0]['zones'])) {
             return explode(",", (string) $result[0]['zones']);
         } else {
@@ -359,10 +359,13 @@ class ClusterNode extends Resources\instance
             );
         }
     }
-
+    /*
+     * @deprecated
+     * 
+     * */
     public function getLB()
     {
-        $result = self::$config->xpath("/aws/cluster/instance[@name='" . $this->name() . "']/parent::*");
+        $result = self::$config->xpath("/aws/cluster/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
         if (isset($result[0]['lb'])) {
             return (string) $result[0]['lb'];
         } else {
@@ -373,7 +376,7 @@ class ClusterNode extends Resources\instance
     public function getInstances()
     {
         $instances = array();
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance");
+        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance");
         
         if (isset($result)) {
             $instances = array();
@@ -423,7 +426,7 @@ class ClusterNode extends Resources\instance
 
     public function getStorageHost()
     {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'storage']");
+        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[role = 'storage']");
         if (isset($result)) {
             $instances = array();
             foreach ($result as $node) {
@@ -914,7 +917,7 @@ EOD;
             file_put_contents('/etc/my.cnf.d/ezcluster.cnf', $t->process('my.ezt'));
 
             // Ram Disk
-            if (self::getRAMDiskSize()) {
+            if ( self::getRAMDiskSize()) {
                 if (! is_dir('/var/mysql.tmp')) {
                     mkdir('/var/mysql.tmp', 0755);
                     chown('/var/mysql.tmp', 'mysql');
