@@ -17,27 +17,19 @@ Order allow,deny
 allow from all
 </Directory>
 
-
 # Set global proxy timeouts
 <Proxy http://localhost:9200>
 ProxySet connectiontimeout=5 timeout=90
 </Proxy>
 
-# Proxy for _aliases and .*/_search
-<LocationMatch "^(/_aliases|.*/_search|.*/_mapping)$">
-ProxyPassMatch http://localhost:9200
-ProxyPassReverse http://localhost:9200
-</LocationMatch>
 
-# Proxy for kibana-int/\{dashboard,temp\} stuff (if you don't want auth on /, then you will want these to be protected)
-<LocationMatch "^(/kibana-int/dashboard/|/kibana-int/temp).*$">
-ProxyPassMatch http://localhost:9200
-ProxyPassReverse http://localhost:9200
-</LocationMatch>
+RewriteEngine On
 
-#RewriteEngine On
 #RewriteCond %\{HTTPS\} off
 #RewriteRule (.*) https://%\{HTTP_HOST\}%\{REQUEST_URI\}
+
+RewriteRule ^(/_aliases|.*/_search|.*/_mapping)$ http://localhost:9200/$1 [P]
+RewriteRule ^(/kibana-int/dashboard/|/kibana-int/temp).*$ http://localhost:9200/$1 [P]
 
 </VirtualHost>
 
