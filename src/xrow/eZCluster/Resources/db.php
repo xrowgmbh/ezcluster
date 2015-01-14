@@ -1,6 +1,7 @@
 <?php
 namespace xrow\eZCluster\Resources;
 
+use xrow\eZCluster\Resources;
 use xrow\eZCluster\Abstracts;
 use xrow\eZCluster;
 use \ezcDbFactory;
@@ -19,7 +20,7 @@ class db extends Abstracts\xrowEC2Resource
         return (string) $this->id;
     }
 
-    public function getDatabaseSettings($rds = true)
+    public static function getDatabaseSettings($rds = true)
     {
         $settings = array(
             'wait_timeout' => 60, // Threads will clean up faster, crons might loose conenction to DFS, also see 'interactive_timeout' of mysql
@@ -48,7 +49,7 @@ class db extends Abstracts\xrowEC2Resource
             'wait_timeout' => '60'
         );
         if (eZCluster\ClusterNode::$config) {
-            $result = eZCluster\ClusterNode::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/database-setting");
+            $result = eZCluster\ClusterNode::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/database-setting");
     
             if ($result !== false) {
                 foreach ($result as $key => $setting) {
