@@ -95,7 +95,7 @@ class db extends Abstracts\xrowEC2Resource
     static public function createParameter(array $settings, $name = 'xrow', $availability_zones = null, certificate $cert = null)
     {}
 
-    static public function migrateDatabase($dsnsource, $dsntarget, $session)
+    static public function migrateDatabase($dsnsource, $dsntarget, $session, $where = false)
     {
         if (! $session) {
             $source = self::translateDSN($dsnsource);
@@ -110,6 +110,10 @@ class db extends Abstracts\xrowEC2Resource
             if (! empty($target['password'])) {
                 $insert .= " -p'" . $target['password'] . "'";
             }
+            if ( $where )
+            {
+                $dump .= " --where=\"$where\"";
+            }
             system($insert);
             unlink("/tmp/dump.sql.gz");
         } else {
@@ -122,6 +126,10 @@ class db extends Abstracts\xrowEC2Resource
             }
             if (!empty($source['password'])) {
                 $dump .= " -p'" . $source['password']."'";
+            }
+            if ( $where )
+            {
+                $dump .= " --where=\"$where\"";
             }
             $dump .= " --databases " . $source['database'] . " | gzip > /tmp/dump.sql.gz";
             $exec->run($dump);

@@ -225,7 +225,7 @@ class ClusterNode extends Resources\instance
                 db::migrateDatabase((string) $environment->environment->datasource->database['dsn'], (string) $environment->environment->database["dsn"], $session);
             }
             if (isset($environment->environment->datasource->storage['dsn'])) {
-                db::migrateDatabase((string) $environment->environment->datasource->storage['dsn'], (string) $environment->environment->storage["dsn"], $session);
+                db::migrateDatabase((string) $environment->environment->datasource->storage['dsn'], (string) $environment->environment->storage["dsn"], $session, "scope in ( 'image', 'binaryfile' )");
             }
         }
         $storagepath = $environment->getStoragePath();
