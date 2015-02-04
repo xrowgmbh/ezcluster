@@ -61,11 +61,11 @@ DocumentRoot /usr/share/ezcluster/html
 
 <Directory /usr/share/ezcluster/html>        
   Options FollowSymLinks  
-  AllowOverride None  
+  AllowOverride None
+  Require all granted
 </Directory>                
 DirectoryIndex index.php
 CustomLog /dev/null common
 ServerName localhost
 ServerAlias * 
-</VirtualHost>      
-
+</VirtualHost>
