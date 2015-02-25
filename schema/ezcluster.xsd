@@ -112,28 +112,37 @@ Copyright 2011 xrow GmbH. All rights reserved.</documentation>
 
     <complexType name="awsType">
         <annotation>
-        	<documentation>The root ele</documentation>
+            <documentation>The root element</documentation>
         </annotation>
         <sequence>
-        	<element ref="ezcluster:cluster" maxOccurs="unbounded" minOccurs="1"></element>
-        	<element name="sshkey" type="ezcluster:sshkeyType" maxOccurs="1" minOccurs="0"></element>
+            <element ref="ezcluster:cluster" maxOccurs="unbounded" minOccurs="1"></element>
+            <element name="sshkey" type="ezcluster:sshkeyType" maxOccurs="1" minOccurs="0"></element>
         </sequence>
         <attribute name="account_id" type="string">
-        	<annotation>
-        		<documentation>AWS account id</documentation>
-        	</annotation></attribute>
-    	<attribute name="access_key" type="string">
-    		<annotation>
-    			<documentation>AWS access key</documentation>
-    		</annotation></attribute>
-    	<attribute name="secret_key" type="string">
-    		<annotation>
-    			<documentation>AWS secret key</documentation>
-    		</annotation></attribute>
-    	<attribute name="revision" type="int">
-    		<annotation>
-    			<documentation>Internal revision number</documentation>
-    		</annotation></attribute>
+            <annotation>
+                <documentation>AWS account id</documentation>
+            </annotation>
+        </attribute>
+        <attribute name="access_key" type="string">
+            <annotation>
+                <documentation>AWS access key</documentation>
+            </annotation>
+        </attribute>
+        <attribute name="secret_key" type="string">
+            <annotation>
+                <documentation>AWS secret key</documentation>
+            </annotation>
+        </attribute>
+        <attribute name="revision" type="int">
+            <annotation>
+                <documentation>Internal revision number</documentation>
+            </annotation>
+        </attribute>
+        <attribute name="github-token" type="string" use="optional">
+            <annotation>
+                <documentation>This is a secure token for accessing github. If you use a anonymous token you have limited access and after a certain number of downloads you will get a TransportException (Message: Could not authenticate against github.com). Better way is to generate your own token with your github user: https://github.com/settings/applications and paste it into this attribute. </documentation>
+            </annotation>
+        </attribute>
     </complexType>
 
 
