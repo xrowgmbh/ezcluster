@@ -169,19 +169,23 @@ class db extends Abstracts\xrowEC2Resource
         if (! in_array($dbdetails['database'], $dbs_exists)) {
             $dbmaster->query('CREATE DATABASE IF NOT EXISTS ' . $dbdetails['database'] . ' CHARACTER SET utf8 COLLATE utf8_general_ci');
         }
-        
-        try {
-            //test if user has access else grant
-            $grants = $dbmaster->query('SHOW GRANTS FOR ' . $dbdetails['username']);
-            $db = ezcDbFactory::create($dbdetails);
-            $db->query('SHOW TABLES');
 
-        } catch (\Exception $e) {
+        //test if user has access else grant
+        $grants = $dbmaster->query('SHOW GRANTS FOR ' . $dbdetails['username']);
+        if( !$grants )
+        {
             $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'%' IDENTIFIED BY '" . $dbdetails['password'] . "'";
             $dbmaster->query($grant);
             $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'localhost' IDENTIFIED BY '" . $dbdetails['password'] . "'";
             $dbmaster->query($grant);
         }
+        
+        #try {
+            $db = ezcDbFactory::create($dbdetails);
+            $db->query('SHOW TABLES');
+        #} catch (\Exception $e) {
+        #    return false;
+        #}
     }
 
     public static function translateDSN($dsn)
