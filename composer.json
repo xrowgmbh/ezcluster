@@ -8,9 +8,12 @@
         "zetacomponents/template": "*",
         "zetacomponents/database": "*",
         "zetacomponents/system-information": "*",
+        "zetacomponents/url": "*",
+        "symfony/process": "*",
         "zetacomponents/console-tools": "dev-master",
         "andres-montanez/magallanes": "dev-master",
-        "herzult/php-ssh": "1.*@dev"
+        "herzult/php-ssh": "1.*@dev",
+        "ezsystems/eztags-ls": "~1.3"
     },
     "autoload": {
         "psr-0": { "": "src/" }

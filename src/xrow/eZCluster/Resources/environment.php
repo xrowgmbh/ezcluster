@@ -5,6 +5,7 @@ use xrow\eZCluster;
 use \ezcTemplateConfiguration;
 use \ezcTemplateNoContext;
 use \ezcTemplate;
+use Symfony\Component\Process\Process;
 
 class environment
 {
@@ -61,8 +62,8 @@ class environment
 
     public function clean($name = null)
     {
-        $this->run('rm -Rf ' . $this->dir . '/*');
-        $this->run('rm -Rf ' . $this->dir . '/.[^.]*');
+        system('/usr/bin/rm -Rf ' . $this->dir . '/*');
+        system('/usr/bin/rm -Rf ' . $this->dir . '/.[^.]*');
     }
 
     public function getSourceStoragePath()
@@ -91,99 +92,152 @@ class environment
         $t->send->secret_key = (string) eZCluster\CloudSDK::$config['secret_key'];
         
         file_put_contents("/home/ec2-user/.s3cfg", $t->process('s3cfg.ezt'));
-        file_put_contents("/root/.s3cfg", $t->process('s3cfg.ezt'));
         
         if (! file_exists($this->dir)) {
             eZCluster\ClusterTools::mkdir($this->dir, eZCluster\CloudSDK::USER, 0777);
         }
         chmod($this->dir, 0777);
-        $bootstrap = $this->environment->xpath("bootstrap");
-        if (! empty($bootstrap)) {
-            $result = $this->environment->xpath("storage");
-            foreach ($result as $db) {
-                $dfsdsn = (string) $db['dsn'];
-                $dfsdetails = db::translateDSN($dfsdsn);
-                $dfsdetails['type'] = (string) $db['type'];
-                $dfsdetails['mount'] = (string) $db['mount'];
-                if (strpos($dfsdetails['mount'], "nfs://") === 0) {
-                    $dfsdetails['mount'] = "/nfs/{$this->name}";
-                    if (isset($db['dir'])) {
-                        $dfsdetails['mount'] .= "/" . (string) $db['dir'];
-                    }
-                    if (! is_dir($dfsdetails['mount'])) {
-                        eZCluster\ClusterTools::mkdir($dfsdetails['mount'], eZCluster\CloudSDK::USER, 0777);
-                    }
+        $bootstrap = $this->environment->bootstrap;
+        
+        $result = $this->environment->xpath("storage");
+        foreach ($result as $db) {
+            $dfsdsn = (string) $db['dsn'];
+            $dfsdetails = db::translateDSN($dfsdsn);
+            $dfsdetails['type'] = (string) $db['type'];
+            $dfsdetails['mount'] = (string) $db['mount'];
+            if (strpos($dfsdetails['mount'], "nfs://") === 0) {
+                $dfsdetails['mount'] = "/nfs/{$this->name}";
+                if (isset($db['dir'])) {
+                    $dfsdetails['mount'] .= "/" . (string) $db['dir'];
                 }
-                $dfsdetails['memcached'] = (string) $db['memcached'];
-                $dfsdetails['bucket'] = (string) $db['bucket'];
+                if (! is_dir($dfsdetails['mount'])) {
+                    eZCluster\ClusterTools::mkdir($dfsdetails['mount'], eZCluster\CloudSDK::USER, 0777);
+                }
             }
+            $dfsdetails['memcached'] = (string) $db['memcached'];
+            $dfsdetails['bucket'] = (string) $db['bucket'];
         }
-        if (! empty($bootstrap) and ! file_exists($this->docroot . "/index.php") and ! file_exists($this->docroot . "/app.php")) {
-            $result = $this->environment->xpath("rds");
-            foreach ($result as $db) {
-                $dsn = (string) $db['dsn'];
-                $dbdetails = db::translateDSN($dsn);
-            }
-            $result = $this->environment->xpath("database");
-            foreach ($result as $db) {
-                $dsn = (string) $db['dsn'];
-                $dbdetails = db::translateDSN($dsn);
-                /*
-                if ($this->getDatabaseSlave()) {
-                    $slavedb = ezcDbFactory::parseDSN($this->getDatabaseSlave());
-                    $fields = array(
-                        "username",
-                        "password",
-                        "hostspec"
-                    );
-                    foreach ($fields as $field) {
-                        if ($slavedb[$field]) {
-                            $dbdetails[$field] = $slavedb[$field];
-                        }
-                    }
-                }
-                */
-            }
+        $result = $this->environment->xpath("rds");
+        foreach ($result as $db) {
+            $dsn = (string) $db['dsn'];
+            $dbdetails = db::translateDSN($dsn);
+        }
+        $result = $this->environment->xpath("database");
+        foreach ($result as $db) {
+            $dsn = (string) $db['dsn'];
+            $dbdetails = db::translateDSN($dsn);
+            /*
+             * if ($this->getDatabaseSlave()) { $slavedb = ezcDbFactory::parseDSN($this->getDatabaseSlave()); $fields = array( "username", "password", "hostspec" ); foreach ($fields as $field) { if ($slavedb[$field]) { $dbdetails[$field] = $slavedb[$field]; } } }
+             */
+        }
+        
+        $solr_master = eZCluster\ClusterNode::getSolrMasterHost();
+        if (instance::current()->ip() == $solr_master or empty($solr_master)) {
+            $solr = "http://localhost:8983/solr/" . $this->name;
+        } else {
+            $solr = "http://" . $solr_master . ":8983/solr/" . $this->name;
+        }
+        if (! is_dir("/home/" . eZCluster\CloudSDK::USER . "/.composer")) {
+            eZCluster\ClusterTools::mkdir("/home/" . eZCluster\CloudSDK::USER . "/.composer", eZCluster\CloudSDK::USER, 0755);
+        }
+        if (isset($dfsdetails['mount']) && ! is_dir("/home/" . eZCluster\CloudSDK::USER . "/.composer")) {
+            eZCluster\ClusterTools::mkdir($dfsdetails['mount'], eZCluster\CloudSDK::USER, 0777);
+        }
+        if (eZCluster\CloudSDK::$config['github-token']) {
+            file_put_contents("/home/" . eZCluster\CloudSDK::USER . "/.composer/config.json", '{ "config": { "github-oauth": { "github.com": "' . (string) eZCluster\CloudSDK::$config['github-token'] . '" } } }');
+        }
+        $env = array();
+
+        foreach ( $this->environment->attributes() as $key => $value ){
+            $env[$key] = $value;
+        }
+        $env["ENVIRONMENT"] = $this->name;
+        $env["DATABASE_NAME"] = $dbdetails["database"];
+        $env["DATABASE_SERVER"] = $dbdetails["hostspec"];
+        $env["DATABASE_USER"] = $dbdetails["username"];
+        $env["DATABASE_PASSWORD"] = $dbdetails["password"];
+        $env["AWS_KEY"] = (string) eZCluster\CloudSDK::$config['access_key'];
+        $env["AWS_SECRETKEY"] = (string) eZCluster\CloudSDK::$config['secret_key'];
+        $env["AWS_ACCOUNTID"] = (string) eZCluster\CloudSDK::$config['account_id'];
+        $env["SOLR_URL"] = $solr;
+        ;
+        $env["DFS_TYPE"] = $dfsdetails["type"];
+        $env["DFS_DATABASE_NAME"] = $dfsdetails["database"];
+        $env["DFS_DATABASE_SERVER"] = $dfsdetails["hostspec"];
+        $env["DFS_DATABASE_USER"] = $dfsdetails["username"];
+        $env["DFS_DATABASE_PASSWORD"] = $dfsdetails["password"];
+        $env["DFS_MOUNT"] = $dfsdetails["mount"];
+        $env["MEMCACHED"] = $dfsdetails["memcached"];
+        $env["BUCKET"] = $dfsdetails["bucket"];
+        $env["PATH"] = "/sbin:/bin:/usr/sbin:/usr/bin";
+        $env["HOME"] = "/home/" . eZCluster\CloudSDK::USER;
+        $env["LANG"] = "en_US.UTF-8";
+        $env["COMPOSER_NO_INTERACTION"] = "1";
+        $scm = (string) $this->environment["scm"];
+        chmod($this->dir, 0777);
+        chown($this->dir, eZCluster\CloudSDK::USER);
+        chgrp($this->dir, eZCluster\CloudSDK::USER);
+        if (! empty($scm) and empty($this->environment->bootstrap)) {
+            $file = $this->dir . "/build";
             
-            $solr_master = eZCluster\ClusterNode::getSolrMasterHost();
-            if (instance::current()->ip() == $solr_master or empty($solr_master)) {
-                $solr = "http://localhost:8983/solr/".$this->name;
-            } else {
-                $solr = "http://" . $solr_master . ":8983/solr/".$this->name;
+            if (strpos($scm, 'svn') !== false) {
+                $url = new \ezcUrl($scm . '/' . (string) $this->environment['branch']);
+                $user = $url->user;
+                $pass = $url->pass;
+                if (! isset($this->environment['branch'])) {
+                    $branch = "";
+                } else {
+                    $branch = $this->environment['branch'];
+                }
+                if (! is_dir($this->dir . "/.svn")) {
+                    $url->user = null;
+                    $url->pass = null;
+                    $this->run("svn co --force --trust-server-cert --non-interactive --username $user --password $pass " . $url->buildUrl() . " " . $this->dir);
+                }
+            } elseif (strpos($scm, 'git') !== false) {
+                $url = new \ezcUrl($scm);
+                if (! isset($this->environment['branch'])) {
+                    $branch = "master";
+                } else {
+                    $branch = $this->environment['branch'];
+                }
+                
+                $this->run("/usr/bin/git " . join(" ", array(
+                    "clone",
+                    $url->buildUrl(),
+                    "--branch",
+                    $branch,
+                    "--single-branch",
+                    $this->dir
+                )), $env, $this->dir);
             }
-            if (! is_dir("/home/" . eZCluster\CloudSDK::USER . "/.composer")) {
-                eZCluster\ClusterTools::mkdir("/home/" . eZCluster\CloudSDK::USER . "/.composer", eZCluster \ CloudSDK::USER, 0755);
-            }
-            if (isset($dfsdetails['mount']) && ! is_dir("/home/" . eZCluster \ CloudSDK::USER . "/.composer")) {
-                eZCluster\ClusterTools::mkdir($dfsdetails['mount'], eZCluster \ CloudSDK::USER, 0777);
-            }
-            if (eZCluster \ CloudSDK::$config['github-token']) {
-                file_put_contents("/home/" . eZCluster \ CloudSDK::USER . "/.composer/config.json", '{ "config": { "github-oauth": { "github.com": "' . (string) eZCluster \ CloudSDK::$config['github-token'] . '" } } }');
-            }
-            foreach ($bootstrap[0] as $script) {
-                $file = tempnam($this->dir, "script_");
-                $patterns = array();
-                $patterns[] = '/\[ENVIRONMENT\]/';
-                $patterns[] = '/\[DATABASE_NAME\]/';
-                $patterns[] = '/\[DATABASE_SERVER\]/';
-                $patterns[] = '/\[DATABASE_USER\]/';
-                $patterns[] = '/\[DATABASE_PASSWORD\]/';
-                $patterns[] = '/\[AWS_KEY\]/';
-                $patterns[] = '/\[AWS_SECRETKEY\]/';
-                $patterns[] = '/\[AWS_ACCOUNTID\]/';
-                $patterns[] = '/\[SOLR_URL\]/';
-                $replacements = array();
-                $replacements[] = $this->name;
-                $replacements[] = $dbdetails["database"];
-                $replacements[] = $dbdetails["hostspec"];
-                $replacements[] = $dbdetails["username"];
-                $replacements[] = $dbdetails["password"];
-                $replacements[] = (string) eZCluster\CloudSDK::$config['access_key'];
-                $replacements[] = (string) eZCluster\CloudSDK::$config['secret_key'];
-                $replacements[] = (string) eZCluster\CloudSDK::$config['account_id'];
-                $replacements[] = $solr;
-                if (isset($dfsdetails))
-                {
+            chmod( $file, 0755);
+            $this->run($file, $env, $this->dir);
+        }
+        if (! empty($this->environment->bootstrap)) {
+            $script = $bootstrap[0];
+            $file = tempnam($this->dir, "script_");
+            $patterns = array();
+            $patterns[] = '/\[ENVIRONMENT\]/';
+            $patterns[] = '/\[DATABASE_NAME\]/';
+            $patterns[] = '/\[DATABASE_SERVER\]/';
+            $patterns[] = '/\[DATABASE_USER\]/';
+            $patterns[] = '/\[DATABASE_PASSWORD\]/';
+            $patterns[] = '/\[AWS_KEY\]/';
+            $patterns[] = '/\[AWS_SECRETKEY\]/';
+            $patterns[] = '/\[AWS_ACCOUNTID\]/';
+            $patterns[] = '/\[SOLR_URL\]/';
+            $replacements = array();
+            $replacements[] = $this->name;
+            $replacements[] = $dbdetails["database"];
+            $replacements[] = $dbdetails["hostspec"];
+            $replacements[] = $dbdetails["username"];
+            $replacements[] = $dbdetails["password"];
+            $replacements[] = (string) eZCluster\CloudSDK::$config['access_key'];
+            $replacements[] = (string) eZCluster\CloudSDK::$config['secret_key'];
+            $replacements[] = (string) eZCluster\CloudSDK::$config['account_id'];
+            $replacements[] = $solr;
+            if (isset($dfsdetails)) {
                 $patterns[] = '/\[DFS_TYPE\]/';
                 $patterns[] = '/\[DFS_DATABASE_NAME\]/';
                 $patterns[] = '/\[DFS_DATABASE_SERVER\]/';
@@ -199,51 +253,48 @@ class environment
                 $replacements[] = $dfsdetails["password"];
                 $replacements[] = $dfsdetails["mount"];
                 $replacements[] = $dfsdetails["memcached"];
-                $replacements[] = $dfsdetails["bucket"];                
-                }
-                
-                $script = preg_replace($patterns, $replacements, ltrim((string) $script));
-                file_put_contents($file, $script);
-                chmod($file, 0755);
-                chown($file, eZCluster\CloudSDK::USER);
-                chgrp($file, eZCluster\CloudSDK::USER);
-                // execute as non root
-                $this->run( $file );
-                if (file_exists($file)) {
-                    unlink($file);
-                }
-                eZCluster\ClusterTools::mkdir($this->docroot, eZCluster\CloudSDK::USER, 0777);
+                $replacements[] = $dfsdetails["bucket"];
             }
-            chmod($this->dir, 0777);
-            chown($this->dir, eZCluster\CloudSDK::USER);
-            chgrp($this->dir, eZCluster\CloudSDK::USER);
-        }
-        $scm = $this->environment->xpath("scm");
-        if (! empty($scm) and empty($bootstrap)) {
-            $name = strtoupper($this->name);
-            $url = (string) $scm[0]['url'];
             
-            if ((string) $scm[0]['type'] == 'svn') {
-                $url = new ezcUrl((string) $scm[0]['url'] . '/' . (string) $scm[0]['branch']);
-                $user = $url->user;
-                $pass = $url->pass;
-                
-                if (is_dir($this->dir) and ! is_dir($this->dir . "/.svn")) {
-                    $url->user = null;
-                    $url->pass = null;
-                    system("svn co --force --trust-server-cert --non-interactive --username $user --password $pass " . $url->buildUrl() . " " . $this->dir);
-                }
-            } elseif ((string) $scm[0]['type'] == 'git') {
-                system("git clone " . $url->buildUrl() . " " . $this->dir);
+            $script = preg_replace($patterns, $replacements, ltrim((string) $script));
+            file_put_contents($file, $script);
+            
+            // execute as non root
+            $this->run($file, $env);
+            if (file_exists($file)) {
+                unlink($file);
             }
+            eZCluster\ClusterTools::mkdir($this->docroot, eZCluster\CloudSDK::USER, 0777);
         }
+
+        chmod($this->dir, 0777);
+        chown($this->dir, eZCluster\CloudSDK::USER);
+        chgrp($this->dir, eZCluster\CloudSDK::USER);
     }
 
-    function run($command)
+    function run($command, $env = array(), $wd = null)
     {
-        $command = escapeshellarg("cd {$this->dir} && " . $command);
-        $command = "su -m -c {$command}  - " . eZCluster\CloudSDK::USER;
-        system($command);
+        $user = posix_getpwnam(eZCluster\CloudSDK::USER);
+        posix_setgid($user['gid']);
+        posix_setuid($user['uid']);
+        $process = new Process($command);
+        if ($wd) {
+            $process->setWorkingDirectory($wd);
+        }
+        $process->setTimeout(3600);
+        $process->setIdleTimeout(3600);
+        $process->setEnv($env);
+        $process->run();
+        
+        if (! $process->isSuccessful()) {
+            throw new \RuntimeException($process->getErrorOutput());
+        }
+        
+        echo $process->getOutput();
+        
+        $user = posix_getpwnam("root");
+        posix_setgid($user['gid']);
+        posix_setuid($user['uid']);
     }
 
     static function getList()
