@@ -173,51 +173,71 @@ class environment
         $env["LANG"] = "en_US.UTF-8";
         $env["COMPOSER_NO_INTERACTION"] = "1";
         $scm = (string) $this->environment["scm"];
+        $script = (string) $this->environment["script"];
         chmod($this->dir, 0777);
         chown($this->dir, eZCluster\CloudSDK::USER);
         chgrp($this->dir, eZCluster\CloudSDK::USER);
-        if (! empty($scm) and empty($this->environment->bootstrap)) {
-            $file = $this->dir . "/build";
-            
+        // set vars
+        if (! empty($scm)) {
             if (strpos($scm, 'svn') !== false) {
-                if (strpos($scm, "/", strlen($scm) -1 ) === false )
+                if (strpos($scm, "/", strlen($scm) ) === false )
                 {
                     $scm .= "/";
                 }
+
                 if (! isset($this->environment['branch'])) {
                     $url = new \ezcUrl( $scm );
                 } else {
-                    $url = new \ezcUrl( $scm . '/' . (string) $this->environment['branch'] );
+                    $url = new \ezcUrl( $scm . (string) $this->environment['branch'] );
                 }
-                
-                $user = $url->user;
-                $pass = $url->pass;
+                $env["USER"] = $url->user;
+                $env["PASSWORD"] = $url->pass;
                 $env["SVN_USER"] = $url->user;
                 $env["SVN_PASS"] = $url->pass;
+                $env["PASSWORD"] = $url->pass;
                 $env["BRANCH"] = $url->buildUrl();
-
+                if (strpos($env["BRANCH"], "/", strlen($env["BRANCH"]) ) === false )
+                {
+                    $env["BRANCH"] .= "/";
+                }
+            }elseif (strpos($scm, 'git') !== false) {
+                $url = new \ezcUrl($scm);
+                $env["USER"] = $url->user;
+                $env["PASSWORD"] = $url->pass;
+                $env["PASS"] = $url->pass;
+                if (! isset($this->environment['branch'])) {
+                    $env["BRANCH"] = "master";
+                } else {
+                    $env["BRANCH"] = $this->environment['branch'];
+                }
+            }
+        }
+        //checkout & execute
+        if (! empty($scm) and empty($script) and empty($this->environment->bootstrap)) {
+            $file = $this->dir . "/build";
+            if (strpos($scm, 'svn') !== false) {
                 if (! is_dir($this->dir . "/.svn")) {
-                    $url->user = null;
-                    $url->pass = null;
-                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username $user --password $pass " . $env["BRANCH"] . " " . $this->dir);
+                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $env["USER"]. " --password ". $env["PASS"]. " " . $env["BRANCH"] . " " . $this->dir);
                 }
             } elseif (strpos($scm, 'git') !== false) {
-                $url = new \ezcUrl($scm);
-                if (! isset($this->environment['branch'])) {
-                    $branch = "master";
-                } else {
-                    $branch = $this->environment['branch'];
-                }
                 
                 $this->run("/usr/bin/git " . join(" ", array(
                     "clone",
                     $url->buildUrl(),
                     "--branch",
-                    $branch,
+                    $env["BRANCH"],
                     "--single-branch",
                     $this->dir
                 )), $env, $this->dir);
             }
+            chmod( $file, 0755);
+            $this->run($file, $env, $this->dir);
+        }
+        if (! empty($script) and empty($this->environment->bootstrap)) {
+            $file = $this->dir . "/build";
+
+            file_put_contents( $file, file_get_contents( $script ));
+
             chmod( $file, 0755);
             $this->run($file, $env, $this->dir);
         }
@@ -291,13 +311,18 @@ class environment
         $process->setTimeout(3600);
         $process->setIdleTimeout(3600);
         $process->setEnv($env);
-        $process->run();
+        $process->run(function ($type, $buffer) {
+    if (Process::ERR === $type) {
+        echo $buffer;
+    } else {
+        echo $buffer;
+    }
+});
         
         if (! $process->isSuccessful()) {
-            throw new \RuntimeException($process->getErrorOutput());
+            $out = $process->getErrorOutput();
+            throw new \RuntimeException($out);
         }
-        
-        echo $process->getOutput();
         
         $user = posix_getpwnam("root");
         posix_setgid($user['gid']);
