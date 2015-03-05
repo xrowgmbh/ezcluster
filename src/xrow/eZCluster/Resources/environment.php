@@ -181,14 +181,13 @@ class environment
             $file = $this->dir . "/build";
             
             if (strpos($scm, 'svn') !== false) {
-                $url = new \ezcUrl($scm . '/' . (string) $this->environment['branch']);
+                if (! isset($this->environment['branch'])) {
+                    $url = new \ezcUrl( $scm );
+                } else {
+                    $url = new \ezcUrl( $scm . '/' . (string) $this->environment['branch'] );
+                }
                 $user = $url->user;
                 $pass = $url->pass;
-                if (! isset($this->environment['branch'])) {
-                    $branch = "";
-                } else {
-                    $branch = $this->environment['branch'];
-                }
                 if (! is_dir($this->dir . "/.svn")) {
                     $url->user = null;
                     $url->pass = null;
