@@ -199,7 +199,7 @@ class environment
                 if (! is_dir($this->dir . "/.svn")) {
                     $url->user = null;
                     $url->pass = null;
-                    $this->run("svn co --force --quite --trust-server-cert --non-interactive --username $user --password $pass " . $env["BRANCH"] . " " . $this->dir);
+                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username $user --password $pass " . $env["BRANCH"] . " " . $this->dir);
                 }
             } elseif (strpos($scm, 'git') !== false) {
                 $url = new \ezcUrl($scm);
