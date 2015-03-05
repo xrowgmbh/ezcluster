@@ -149,7 +149,7 @@ class environment
         $env = array();
 
         foreach ( $this->environment->attributes() as $key => $value ){
-            $env[$key] = $value;
+            $env[strtoupper($key)] = $value;
         }
         $env["ENVIRONMENT"] = $this->name;
         $env["DATABASE_NAME"] = $dbdetails["database"];
@@ -160,7 +160,6 @@ class environment
         $env["AWS_SECRETKEY"] = (string) eZCluster\CloudSDK::$config['secret_key'];
         $env["AWS_ACCOUNTID"] = (string) eZCluster\CloudSDK::$config['account_id'];
         $env["SOLR_URL"] = $solr;
-        ;
         $env["DFS_TYPE"] = $dfsdetails["type"];
         $env["DFS_DATABASE_NAME"] = $dfsdetails["database"];
         $env["DFS_DATABASE_SERVER"] = $dfsdetails["hostspec"];
@@ -181,17 +180,26 @@ class environment
             $file = $this->dir . "/build";
             
             if (strpos($scm, 'svn') !== false) {
+                if (strpos($scm, "/", strlen($scm) -1 ) === false )
+                {
+                    $scm .= "/";
+                }
                 if (! isset($this->environment['branch'])) {
                     $url = new \ezcUrl( $scm );
                 } else {
                     $url = new \ezcUrl( $scm . '/' . (string) $this->environment['branch'] );
                 }
+                
                 $user = $url->user;
                 $pass = $url->pass;
+                $env["SVN_USER"] = $url->user;
+                $env["SVN_PASS"] = $url->pass;
+                $env["BRANCH"] = $url->buildUrl();
+
                 if (! is_dir($this->dir . "/.svn")) {
                     $url->user = null;
                     $url->pass = null;
-                    $this->run("svn co --force --trust-server-cert --non-interactive --username $user --password $pass " . $url->buildUrl() . " " . $this->dir);
+                    $this->run("svn co --force --quite --trust-server-cert --non-interactive --username $user --password $pass " . $env["BRANCH"] . " " . $this->dir);
                 }
             } elseif (strpos($scm, 'git') !== false) {
                 $url = new \ezcUrl($scm);
