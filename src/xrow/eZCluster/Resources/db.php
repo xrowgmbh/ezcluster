@@ -165,13 +165,17 @@ class db extends Abstracts\xrowEC2Resource
         }
         
         $dbdetails = ezcDbFactory::parseDSN($dsn);
-        
+
         if (! in_array($dbdetails['database'], $dbs_exists)) {
             $dbmaster->query('CREATE DATABASE IF NOT EXISTS ' . $dbdetails['database'] . ' CHARACTER SET utf8 COLLATE utf8_general_ci');
         }
 
         //test if user has access else grant
-        $grants = $dbmaster->query('SHOW GRANTS FOR ' . $dbdetails['username']);
+        try {
+            $grants = $dbmaster->query('SHOW GRANTS FOR ' . $dbdetails['username']);
+        } catch (\Exception $e) {
+            $grants = false;
+        }
         if( !$grants )
         {
             $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'%' IDENTIFIED BY '" . $dbdetails['password'] . "'";
@@ -179,13 +183,11 @@ class db extends Abstracts\xrowEC2Resource
             $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'localhost' IDENTIFIED BY '" . $dbdetails['password'] . "'";
             $dbmaster->query($grant);
         }
-        
-        #try {
+        // test DB
+        if ( $dbdetails['hostspec'] == "localhost" ){
             $db = ezcDbFactory::create($dbdetails);
             $db->query('SHOW TABLES');
-        #} catch (\Exception $e) {
-        #    return false;
-        #}
+        }
     }
 
     public static function translateDSN($dsn)

@@ -193,12 +193,13 @@ class ClusterNode extends Resources\instance
         ezcDbInstance::set($dbmaster);
         
         if ($dbmaster) {
-            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment/database";
+            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment/database[@dsn]";
             $result = self::$config->xpath($xp);
+            
             foreach ($result as $db) {
                 db::initDB((string) $db['dsn'], $dbmaster);
             }
-            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment/storage";
+            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment/storage[@dsn]";
             $result = self::$config->xpath($xp);
             foreach ($result as $db) {
                 db::initDB((string) $db['dsn'], $dbmaster);
