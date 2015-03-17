@@ -97,7 +97,9 @@ class environment
             eZCluster\ClusterTools::mkdir($this->dir, eZCluster\CloudSDK::USER, 0777);
         }
         chmod($this->dir, 0777);
-        $bootstrap = $this->environment->bootstrap;
+        if (isset($this->environment->bootstrap->script)){
+            $bootstrap_script = (string)$this->environment->bootstrap->script[0];
+        }
         
         $result = $this->environment->xpath("storage");
         foreach ($result as $db) {
@@ -213,7 +215,7 @@ class environment
             }
         }
         //checkout & execute
-        if (! empty($scm) and empty($script) and empty($this->environment->bootstrap)) {
+        if (! empty($scm) and empty($script) and empty( $bootstrap_script )) {
             $file = $this->dir . "/build";
             if (strpos($scm, 'svn') !== false) {
                 if (! is_dir($this->dir . "/.svn")) {
@@ -233,7 +235,7 @@ class environment
             chmod( $file, 0755);
             $this->run($file, $env, $this->dir);
         }
-        if (! empty($script) and empty($this->environment->bootstrap)) {
+        if (! empty($script) and empty($bootstrap_script)) {
             $file = $this->dir . "/build";
 
             file_put_contents( $file, file_get_contents( $script ));
@@ -241,8 +243,8 @@ class environment
             chmod( $file, 0755);
             $this->run($file, $env, $this->dir);
         }
-        if (! empty($this->environment->bootstrap)) {
-            $script = $bootstrap[0];
+        if (! empty($bootstrap_script)) {
+            $script = $this->environment->bootstrap->script[0];
             $file = tempnam($this->dir, "script_");
             $patterns = array();
             $patterns[] = '/\[ENVIRONMENT\]/';
@@ -283,9 +285,9 @@ class environment
                 $replacements[] = $dfsdetails["bucket"];
             }
             
-            $script = preg_replace($patterns, $replacements, ltrim((string) $script));
-            file_put_contents($file, $script);
-            
+            $bootstrap_script = preg_replace($patterns, $replacements, ltrim((string) $bootstrap_script));
+            file_put_contents($file, $bootstrap_script);
+            chmod( $file, 0755);
             // execute as non root
             $this->run($file, $env);
             if (file_exists($file)) {
