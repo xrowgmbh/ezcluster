@@ -104,9 +104,9 @@ class db extends Abstracts\xrowEC2Resource
             if (! empty($source['password'])) {
                 $dump .= " -p'" . $source['password'];
             }
-            $dump .= "' --databases " . $source['database'] . " | gzip > /tmp/dump.sql.gz";
+            $dump .= "' --databases " . $source['database'] . " | gzip > /var/tmp/dump.sql.gz";
             system($dump);
-            $insert = "gunzip < /tmp/dump.sql.gz | mysql --compress -h" . $target['hostspec'] . " -u " . $target['username'];
+            $insert = "gunzip < /var/tmp/dump.sql.gz | mysql --compress -h" . $target['hostspec'] . " -u " . $target['username'];
             if (! empty($target['password'])) {
                 $insert .= " -p'" . $target['password'] . "'";
             }
@@ -115,7 +115,7 @@ class db extends Abstracts\xrowEC2Resource
                 $dump .= " --where=\"$where\"";
             }
             system($insert);
-            unlink("/tmp/dump.sql.gz");
+            unlink("/var/tmp/dump.sql.gz");
         } else {
             $exec = $session->getExec();
             $source = db::translateDSN($dsnsource);
@@ -131,14 +131,14 @@ class db extends Abstracts\xrowEC2Resource
             {
                 $dump .= " --where=\"$where\"";
             }
-            $dump .= " --databases " . $source['database'] . " | gzip > /tmp/dump.sql.gz";
+            $dump .= " --databases " . $source['database'] . " | gzip > /var/tmp/dump.sql.gz";
             $exec->run($dump);
             $sftp = $session->getSftp();
-            $sftp->receive("/tmp/dump.sql.gz", "/tmp/dump.sql.gz");
-            $sftp->unlink("/tmp/dump.sql.gz");
+            $sftp->receive("/var/tmp/dump.sql.gz", "/var/tmp/dump.sql.gz");
+            $sftp->unlink("/var/tmp/dump.sql.gz");
             $target = db::translateDSN($dsntarget);
             
-            $insert = "gunzip < /tmp/dump.sql.gz | mysql --compress -h" . $target['hostspec'];
+            $insert = "gunzip < /var/tmp/dump.sql.gz | mysql --compress -h" . $target['hostspec'];
             if (!empty($target['username'])) {
                 $insert .= " -u " . $target['username'];
             }if (!empty($target['password'])) {
@@ -146,7 +146,7 @@ class db extends Abstracts\xrowEC2Resource
             }
             echo "$insert";
             system($insert);
-            unlink("/tmp/dump.sql.gz");
+            unlink("/var/tmp/dump.sql.gz");
         }
     }
 
