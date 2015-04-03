@@ -176,7 +176,19 @@ class db extends Abstracts\xrowEC2Resource
         } catch (\Exception $e) {
             $grants = false;
         }
-        if( !$grants )
+        if ( is_object( $grants ) and $grants->rowCount() > 0 ){
+        	foreach( $grants->fetchAll() as $grant ){
+        	    $match = false;
+        		if ( isset( $grant['grants for ' .  $dbdetails['username'] . '@%'] ) and $grant['grants for ' .  $dbdetails['username'] . '@%'] == "GRANT ALL PRIVILIEGES ON `" . $dbdetails['database'] . "`.* TO " . $dbdetails['username'] . "@'%'" ){
+        			$match = true;
+        		}
+        		$grants = false;
+        	}
+        	if (!$match){
+        	    $grants = false;
+        	}
+        }
+        if( $grants === false or ( is_object( $grants ) and $grants->rowCount() === 0 ) )
         {
             $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'%' IDENTIFIED BY '" . $dbdetails['password'] . "'";
             $dbmaster->query($grant);
@@ -187,6 +199,7 @@ class db extends Abstracts\xrowEC2Resource
         if ( $dbdetails['hostspec'] == "localhost" ){
             $db = ezcDbFactory::create($dbdetails);
             $db->query('SHOW TABLES');
+            
         }
     }
 
