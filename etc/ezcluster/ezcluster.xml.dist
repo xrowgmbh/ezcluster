@@ -47,14 +47,14 @@ source ./54.sh
             <hostname>stable.*</hostname>
             <hostname>localhost</hostname>
         </environment>
-        <environment name="plain"> 
-            <bootstrap>
-                <script><![CDATA[
-#!/bin/sh
-wget --no-check-certificate https://raw.githubusercontent.com/xrowgmbh/xrowvagrant/master/ezcluster/scripts/plain.sh
-source ./plain.sh
-]]></script>
-            </bootstrap>
+        <environment name="ezplatform" 
+                     docroot="web"
+                     script="https://raw.githubusercontent.com/xrowgmbh/xrowvagrant-demodata/ezplatform/build">
+            <database dsn="mysql://xrow:password@localhost/ezplatform"/>
+            <storage dsn="mysql://xrow:password@localhost/ezplatform" mount="/mnt/nas/ezplatform"/>
+            <hostname>ezplatform.*</hostname>
+        </environment>
+        <environment name="plain" scm="https://github.com/xrowgmbh/xrowvagrant-demodata.git" branch="plain">
             <database dsn="mysql://xrow:password@localhost/plain"/>
             <storage dsn="mysql://xrow:password@localhost/plain" mount="/mnt/nas/live"/>
             <hostname>plain.*</hostname>
