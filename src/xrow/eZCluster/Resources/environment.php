@@ -289,7 +289,7 @@ class environment
             file_put_contents($file, $bootstrap_script);
             chmod( $file, 0755);
             // execute as non root
-            $this->run($file, $env);
+            $this->run($file, $env, $this->dir);
             if (file_exists($file)) {
                 unlink($file);
             }
