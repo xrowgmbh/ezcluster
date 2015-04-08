@@ -3,7 +3,8 @@ Description=eZ Platform Application Server
 After=syslog.target network.target
 
 [Service]
-Type=simple
+Type=oneshot
+RemainAfterExit=yes
 WorkingDirectory=/usr/share/ezcluster
 ExecStart=/usr/bin/ezcluster start
 ExecStop=/usr/bin/ezcluster stop
