@@ -1061,8 +1061,8 @@ EOD;
                 }
 
                 $debug = <<<'EOD'
-; register the extension to be loaded by Zend Extension Manager
-zend_extension_manager.dir.debugger=/usr/local/zend/lib/debugger
+; Enable debugger extension module
+zend_extension=/usr/lib64/php/modules/ZendDebugger.so
 
 ; Specifies the hosts that are allowed to connect (hostmask list) with Zend Debugger when running a remote debug session with Zend Studio
 zend_debugger.allow_hosts=127.0.0.1/32,10.0.0.0/8,192.168.0.0/16,172.16.0.0/12
@@ -1100,7 +1100,7 @@ EOD;
 zend_extension=/usr/lib64/php/modules/opcache.so
 
 ; Determines if Zend OPCache is enabled
-opcache.enable=1
+opcache.enable=0
 
 ; Determines if Zend OPCache is enabled for the CLI version of PHP
 ;opcache.enable_cli=0
