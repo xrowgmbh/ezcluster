@@ -219,8 +219,12 @@ class ClusterNode extends Resources\instance
         $authentication = null;
         if (isset($connection['pass'])) {
             $authentication = new Ssh\Authentication\Password($connection['user'], $connection['pass']);
-        } else {
+        } elseif (file_exists ( "/root/.ssh/id_rsa" ) and file_exists ( "/root/.ssh/id_rsa.pub" ))
+         {
             $authentication = new Ssh\Authentication\PublicKeyFile($connection['user'], '/root/.ssh/id_rsa.pub', '/root/.ssh/id_rsa');
+        }
+        else {
+            throw new \Exception("Key or password not given for $name");
         }
         $session = new Ssh\Session($configuration, $authentication);
         if ($copydb) {
@@ -243,7 +247,14 @@ class ClusterNode extends Resources\instance
             $excludesRsync .= ' --exclude=' . escapeshellarg($exclude) . ' ';
         }
         if ($storagepath and $sourcestoragepath and $copydata) {
-            $command = 'rsync -avztr --no-super --no-owner --no-group --delete-excluded --rsh="ssh -i ~/.ssh/id_rsa -p 22" ' . $excludesRsync . ' ' . "{$connection['user']}@{$connection['host']}:{$sourcestoragepath}/ {$storagepath}/";
+            $command = 'rsync -avztr --no-super --no-owner --no-group --delete-excluded ';
+            if ( !isset( $connection['pass'] ) ){
+                $command .= '--rsh="ssh -i ~/.ssh/id_rsa -p 22" ';
+            }else{
+                $command .= '--rsh="/usr/bin/sshpass -p '.$connection['pass'].' ssh -o StrictHostKeyChecking=no -l '.$connection['user'].'"';
+            }
+            $command .= $excludesRsync . ' ' . "{$connection['user']}@{$connection['host']}:{$sourcestoragepath}/ {$storagepath}/";
+            var_dump($command);
             system($command);
         }
         if (file_exists($environment->dir . "/" . "bin/php/ezcache.php")) {
