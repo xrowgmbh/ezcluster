@@ -162,14 +162,17 @@ class environment
         $env["AWS_SECRETKEY"] = (string) eZCluster\CloudSDK::$config['secret_key'];
         $env["AWS_ACCOUNTID"] = (string) eZCluster\CloudSDK::$config['account_id'];
         $env["SOLR_URL"] = $solr;
-        $env["DFS_TYPE"] = $dfsdetails["type"];
-        $env["DFS_DATABASE_NAME"] = $dfsdetails["database"];
-        $env["DFS_DATABASE_SERVER"] = $dfsdetails["hostspec"];
-        $env["DFS_DATABASE_USER"] = $dfsdetails["username"];
-        $env["DFS_DATABASE_PASSWORD"] = $dfsdetails["password"];
-        $env["DFS_MOUNT"] = $dfsdetails["mount"];
-        $env["MEMCACHED"] = $dfsdetails["memcached"];
-        $env["BUCKET"] = $dfsdetails["bucket"];
+        if ( $dfsdetails )
+        {
+            $env["DFS_TYPE"] = $dfsdetails["type"];
+            $env["DFS_DATABASE_NAME"] = $dfsdetails["database"];
+            $env["DFS_DATABASE_SERVER"] = $dfsdetails["hostspec"];
+            $env["DFS_DATABASE_USER"] = $dfsdetails["username"];
+            $env["DFS_DATABASE_PASSWORD"] = $dfsdetails["password"];
+            $env["DFS_MOUNT"] = $dfsdetails["mount"];
+            $env["MEMCACHED"] = $dfsdetails["memcached"];
+            $env["BUCKET"] = $dfsdetails["bucket"];
+        }
         $env["PATH"] = "/sbin:/bin:/usr/sbin:/usr/bin";
         $env["HOME"] = "/home/" . eZCluster\CloudSDK::USER;
         $env["LANG"] = "en_US.UTF-8";
@@ -232,8 +235,10 @@ class environment
                     $this->dir
                 )), $env, $this->dir);
             }
-            chmod( $file, 0755);
-            $this->run($file, $env, $this->dir);
+            if(file_exists($file)){
+                chmod( $file, 0755);
+                $this->run($file, $env, $this->dir);
+            }
         }
         if (! empty($script) and empty($bootstrap_script)) {
             $file = $this->dir . "/build";

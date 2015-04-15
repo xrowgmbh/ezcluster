@@ -254,7 +254,6 @@ class ClusterNode extends Resources\instance
                 $command .= '--rsh="/usr/bin/sshpass -p '.$connection['pass'].' ssh -o StrictHostKeyChecking=no -l '.$connection['user'].'"';
             }
             $command .= $excludesRsync . ' ' . "{$connection['user']}@{$connection['host']}:{$sourcestoragepath}/ {$storagepath}/";
-            var_dump($command);
             system($command);
         }
         if (file_exists($environment->dir . "/" . "bin/php/ezcache.php")) {
