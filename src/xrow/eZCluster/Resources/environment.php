@@ -162,7 +162,7 @@ class environment
         $env["AWS_SECRETKEY"] = (string) eZCluster\CloudSDK::$config['secret_key'];
         $env["AWS_ACCOUNTID"] = (string) eZCluster\CloudSDK::$config['account_id'];
         $env["SOLR_URL"] = $solr;
-        if ( $dfsdetails )
+        if ( isset( $dfsdetails ) )
         {
             $env["DFS_TYPE"] = $dfsdetails["type"];
             $env["DFS_DATABASE_NAME"] = $dfsdetails["database"];
