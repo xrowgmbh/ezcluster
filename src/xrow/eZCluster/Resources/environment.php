@@ -222,7 +222,7 @@ class environment
             $file = $this->dir . "/build";
             if (strpos($scm, 'svn') !== false) {
                 if (! is_dir($this->dir . "/.svn")) {
-                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $env["USER"]. " --password ". $env["PASS"]. " " . $env["BRANCH"] . " " . $this->dir);
+                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $env["USER"]. " --password ". $env["PASSWORD"]. " " . $env["BRANCH"] . " " . $this->dir);
                 }
             } elseif (strpos($scm, 'git') !== false) {
                 
