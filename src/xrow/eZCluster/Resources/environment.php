@@ -207,7 +207,7 @@ class environment
                 }
                 svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_USERNAME, $env["SVN_USER"]);
                 svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_PASSWORD, $env["SVN_PASS"]);
-                $env["REVISION"] = svn_log($env["BRANCH"],SVN_REVISION_HEAD, SVN_REVISION_HEAD, 1)[0]['rev'];
+                $env["REVISION"] = svn_log($env["BRANCH"],SVN_REVISION_HEAD, 1, 1)[0]['rev'];
 
             }elseif (strpos($scm, 'git') !== false) {
                 $url = new \ezcUrl($scm);
