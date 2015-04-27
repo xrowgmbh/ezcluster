@@ -205,6 +205,10 @@ class environment
                 {
                     $env["BRANCH"] .= "/";
                 }
+                svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_USERNAME, $env["SVN_USER"]);
+                svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_PASSWORD, $env["SVN_PASS"]);
+                $env["REVISION"] = svn_log($env["BRANCH"],SVN_REVISION_HEAD, SVN_REVISION_HEAD, 1)[0]['rev'];
+
             }elseif (strpos($scm, 'git') !== false) {
                 $url = new \ezcUrl($scm);
                 $env["USER"] = $url->user;
@@ -215,6 +219,10 @@ class environment
                 } else {
                     $env["BRANCH"] = $this->environment['branch'];
                 }
+                $git_rev = shell_exec("git ls-remote" . $url . $env["BRANCH"] . "HEAD");
+                $git_rev = str_replace("HEAD","",$git_rev);
+                $git_rev = str_replace(" ","",$git_rev);
+                $env["REVISION"] = $git_rev;
             }
         }
         //checkout & execute
