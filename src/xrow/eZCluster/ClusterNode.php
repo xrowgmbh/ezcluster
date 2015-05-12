@@ -24,7 +24,7 @@ class ClusterNode extends Resources\instance
 
     const DRBD_CONFIG_FILE = '/etc/drbd.conf';
 
-    const CRONTAB_FILE = '/etc/ezcluster/crontab.ec2-user';
+    const CRONTAB_FILE = '/tmp/crontab.ec2-user';
 
     const HTTP_CONFIG_FILE = '/etc/httpd/sites/environment.conf';
 
@@ -689,10 +689,11 @@ EOD;
         }
         if (isset($crondata)) {
             echo "Setup crontab " . self::CRONTAB_FILE . " for " . CloudSDK::USER . "\n";
-            $vars = "PATH=/usr/local/zend/bin:/usr/local/bin:/bin:/usr/bin\nLD_LIBRARY_PATH=/usr/local/zend/lib:/lib:/usr/lib\n\n";
+            $vars = "PATH=/usr/local/bin:/bin:/usr/bin\nLD_LIBRARY_PATH=/lib:/usr/lib\n\n";
             file_put_contents(self::CRONTAB_FILE, $vars . $crondata);
             $cmd = "crontab -u " . CloudSDK::USER . " " . self::CRONTAB_FILE;
             system($cmd);
+            unlink(self::CRONTAB_FILE);
         }
     }
 
