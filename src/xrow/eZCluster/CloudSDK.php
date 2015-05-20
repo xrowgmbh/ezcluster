@@ -85,6 +85,9 @@ class CloudSDK
         {
             self::$cloud = self::CLOUD_TYPE_SIMPLE;
         }
+        
+        //AWS magic not supported anymore, AWS SDK need upgade to version 2
+        self::$cloud = self::CLOUD_TYPE_SIMPLE;
         if (!defined('CLOUD'))
         {
         	define( 'CLOUD', self::$cloud );
@@ -101,7 +104,7 @@ class CloudSDK
             }
             elseif ( self::$cloud === self::CLOUD_TYPE_AWS )
             {
-                $data = trim( file_get_contents( 'http://169.254.169.254/latest/user-data' ) );
+                $data = trim( @file_get_contents( 'http://169.254.169.254/latest/user-data' ) );
                 if ( strpos( $data, 'http' ) === 0 )
                 {
                 	$data = trim( file_get_contents( $data ) );
@@ -203,6 +206,11 @@ class CloudSDK
                 case 'eu-west-1a':
                 case 'eu-west-1b':
                 case 'eu-west-1c':
+                    self::$region = "EU_W1";
+                    break;
+                case 'eu-central-1a':
+                case 'eu-central-1b':
+                case 'eu-central-1c':
                     self::$region = "EU_W1";
                     break;
                 case 'us-west-1a':

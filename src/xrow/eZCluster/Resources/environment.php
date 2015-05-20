@@ -221,7 +221,7 @@ class environment
                 } else {
                     $env["BRANCH"] = $this->environment['branch'];
                 }
-                $git_rev = shell_exec("git ls-remote" . $url . $env["BRANCH"] . "HEAD");
+                $git_rev = shell_exec("/usr/bin/git ls-remote " . $env["SCM"] . " " . $env["BRANCH"] . " HEAD");
                 $git_rev = str_replace("HEAD","",$git_rev);
                 $git_rev = str_replace(" ","",$git_rev);
                 $env["REVISION"] = $git_rev;
@@ -238,7 +238,7 @@ class environment
                 
                 $this->run("/usr/bin/git " . join(" ", array(
                     "clone",
-                    $url->buildUrl(),
+                    $env["SCM"],
                     "--branch",
                     $env["BRANCH"],
                     "--single-branch",
