@@ -205,6 +205,8 @@ class environment
                 {
                     $env["BRANCH"] .= "/";
                 }
+                svn_auth_set_parameter(SVN_AUTH_PARAM_DONT_STORE_PASSWORDS, false);
+                svn_auth_set_parameter(PHP_SVN_AUTH_PARAM_IGNORE_SSL_VERIFY_ERRORS, true);
                 svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_USERNAME, $env["SVN_USER"]);
                 svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_PASSWORD, $env["SVN_PASS"]);
                 $env["REVISION"] = svn_log($env["BRANCH"],SVN_REVISION_HEAD, 1, 1)[0]['rev'];
