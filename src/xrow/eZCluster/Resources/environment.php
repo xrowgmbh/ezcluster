@@ -200,6 +200,8 @@ class environment
                 $env["SVN_USER"] = $url->user;
                 $env["SVN_PASS"] = $url->pass;
                 $env["PASSWORD"] = $url->pass;
+                $url->user = null;
+                $url->pass = null;
                 $env["BRANCH"] = $url->buildUrl();
                 if (strpos($env["BRANCH"], "/", strlen($env["BRANCH"]) ) === false )
                 {
