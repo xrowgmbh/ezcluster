@@ -4,6 +4,7 @@ vcl 4.0;
 #    new b = directors.round_robin()
 #    b.add_backend(node1);
 #}
+include "ezpublish.vcl";
 
 backend default {
   .host = "127.0.0.1";
@@ -29,10 +30,6 @@ backend backend_setup {
   .connect_timeout = 10s;
   .first_byte_timeout = 600s;
   .between_bytes_timeout = 600s;
-}
-acl purge {
-"localhost"; 
-"127.0.0.1";
 }
 
 acl elb {
@@ -101,12 +98,14 @@ sub vcl_recv
      }
     }
     if (req.method == "PURGE") {
-        if (!client.ip ~ purge) {
-            return (synth(405, "Not allowed."));
+        if (!client.ip ~ invalidators) {
+            return (synth(405, "Not allowed"));
         }
-        ban("req.url ~ " + req.url + " && req.http.host == " + req.http.host);
-        return (synth(200, "Purged."));
+        return (purge);
     }
+    // Trigger cache purge if needed
+    call ez_purge;
+
     if (req.method != "GET" &&
         req.method != "HEAD" &&
         req.method != "PUT" &&
@@ -116,11 +115,6 @@ sub vcl_recv
         req.method != "DELETE")
     {
         /* Non-RFC2616 or CONNECT which is weird. */
-        return (pass);
-    }
-    # unknown problems with .gz files and yum
-    # [Errno 14] Downloaded more than max size for http://packages.xrow.com/redhat/6/repodata/primary.xml.gz                          
-    if (req.url ~ "\.gz$") {
         return (pass);
     }
     if (req.http.Cookie && (req.http.Cookie ~ "eZSESSID" || req.http.Cookie ~ "PHPSESSID"))
@@ -141,6 +135,10 @@ sub vcl_recv
     #    return (pass);
     #}
     set req.http.Surrogate-Capability = "abc=ESI/1.0";
+
+    // Retrieve client user hash and add it to the forwarded request.
+    call ez_user_hash;
+
     return (hash);
 }
 sub vcl_hash {  
@@ -157,6 +155,11 @@ sub vcl_hash {
     return (lookup); 
 }
 sub vcl_backend_response {
+    if (bereq.http.accept ~ "application/vnd.fos.user-context-hash"
+        && beresp.status >= 500
+    ) {
+        return (abandon);
+    }
     set beresp.http.X-Backend = beresp.backend.name;
     if (beresp.http.Surrogate-Control ~ "ESI/1.0")
     {
@@ -195,6 +198,27 @@ sub vcl_backend_response {
 }
 sub vcl_deliver 
 {
+    // On receiving the hash response, copy the hash header to the original
+    // request and restart.
+    if (req.restarts == 0
+        && resp.http.content-type ~ "application/vnd.fos.user-context-hash"
+    ) {
+        set req.http.x-user-hash = resp.http.x-user-hash;
+
+        return (restart);
+    }
+    // If we get here, this is a real response that gets sent to the client.
+
+    // Remove the vary on context user hash, this is nothing public. Keep all
+    // other vary headers.
+    set resp.http.Vary = regsub(resp.http.Vary, "(?i),? *x-user-hash *", "");
+    set resp.http.Vary = regsub(resp.http.Vary, "^, *", "");
+    if (resp.http.Vary == "") {
+        unset resp.http.Vary;
+    }
+    // Sanity check to prevent ever exposing the hash to a client.
+    unset resp.http.x-user-hash;
+
     if( resp.http.Content-Type && resp.http.Content-Type ~ "text/html" )
     {
         unset resp.http.Last-Modified;
