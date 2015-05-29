@@ -38,10 +38,6 @@ sub vcl_recv
     #if (req.method == "POST" && ( req.url == "/" ||  req.url ~ "ptrxcz" ) ) {
     #    return (synth(555, "Response: Pushdo Virus"));
     #}
-    if (req.http.Cookie !~ "eZSESSID" ) {
-        # User don't have session cookie => Set a hardcoded anonymous hash
-        set req.http.X-User-Hash = "38015b703d82206ebc01d17a39c727e5";
-    }
     if (req.url ~ "/server-status")
     {
         return (pass);
@@ -100,23 +96,16 @@ sub vcl_recv
         /* Non-RFC2616 or CONNECT which is weird. */
         return (pass);
     }
-    if (req.http.Cookie && (req.http.Cookie ~ "eZSESSID" || req.http.Cookie ~ "PHPSESSID"))
-    {
-       return (pass);
-    }
     if (req.method != "GET" && req.method != "HEAD") {
         /* We only deal with GET and HEAD by default */
         return (pass);
     }
+
     if (req.http.Authorization) {
         /* Not cacheable by default */
         return (pass);
     }
-    # @TODO think about auth cookies from other applications
-    #if (req.http.Cookie) {
-    #    /* Not cacheable by default */
-    #    return (pass);
-    #}
+
     set req.http.Surrogate-Capability = "abc=ESI/1.0";
 
     // Retrieve client user hash and add it to the forwarded request.
@@ -201,6 +190,16 @@ sub vcl_deliver
     }
     // Sanity check to prevent ever exposing the hash to a client.
     unset resp.http.x-user-hash;
+    
+    if( resp.http.served-by )
+    {
+        unset resp.http.served-by;  
+    }
+
+    if( resp.http.server )                                           
+    {
+        unset resp.http.server;  
+    }
 
     if( resp.http.Content-Type && resp.http.Content-Type ~ "text/html" )
     {
@@ -211,7 +210,7 @@ sub vcl_deliver
     }
     # We do not want to expire all at once; Age > max-age
     set resp.http.Age = "0";
-    set resp.http.X-Powered-By = "eZ Publish by xrow";
+    set resp.http.X-Powered-By = "xrow GmbH";
     unset resp.http.Via;
     if (obj.hits > 0)
     {
