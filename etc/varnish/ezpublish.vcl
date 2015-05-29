@@ -4,15 +4,20 @@ acl invalidators {
 }
 
 // ACL for debuggers IP
-acl debuggers {
-    "127.0.0.1";
+acl debuggers {  
+    "127.0.0.1";  
 }
 
 // Handle purge
 // You may add FOSHttpCacheBundle tagging rules
 // See http://foshttpcache.readthedocs.org/en/latest/varnish-configuration.html#id4
 sub ez_purge {
-
+    if (req.method == "PURGE") {
+        if (!client.ip ~ invalidators) {
+            return (synth(405, "Not allowed"));
+        }
+        return (purge);
+    }
     if (req.method == "BAN") {
         if (!client.ip ~ invalidators) {
             return (synth(405, "Method not allowed"));

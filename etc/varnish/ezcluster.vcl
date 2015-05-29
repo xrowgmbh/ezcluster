@@ -1,9 +1,5 @@
 vcl 4.0;
 
-#sub vcl_init {
-#    new b = directors.round_robin()
-#    b.add_backend(node1);
-#}
 include "ezpublish.vcl";
 
 backend default {
@@ -35,13 +31,6 @@ backend backend_setup {
 acl elb {
 "10.0.0.0"/24;
 }
-#sub vcl_init {
-#    new cluster1 = directors.hash();;
-#    cluster1.add_backend( backend_local, 1.0);
-#    new setup1 = directors.hash();;
-#    setup1.add_backend( backend_setup, 1.0);
-#}
-
 
 sub vcl_recv
 {
@@ -96,12 +85,6 @@ sub vcl_recv
      } elseif( !client.ip ~ elb ) {
        set req.http.X-Forwarded-For = client.ip;
      }
-    }
-    if (req.method == "PURGE") {
-        if (!client.ip ~ invalidators) {
-            return (synth(405, "Not allowed"));
-        }
-        return (purge);
     }
     // Trigger cache purge if needed
     call ez_purge;
