@@ -29,10 +29,13 @@ class environment
             $this->environment = $result[0];
             $this->name = (string) $this->environment['name'];
             $this->dir = eZCluster\CloudSDK::SITES_ROOT . "/" . $this->name;
+            $this->dirtmp = eZCluster\CloudSDK::SITES_ROOT . "/" . $this->name . ".tmp";
             if (isset($this->environment['docroot'])) {
                 $this->docroot = $this->dir . "/" . (string) $this->environment['docroot'];
+                $this->docroottmp = $this->dirtmp . "/" . (string) $this->environment['docroot'];
             } else {
                 $this->docroot = $this->dir;
+                $this->docroottmp = $this->dirtmp;
             }
         } else {
             throw new \Exception("Name not given. Please define a enviroment.");
@@ -86,6 +89,12 @@ class environment
 
     public function setup()
     {
+        $fs = new \Symfony\Component\Filesystem();
+        
+        if ( $fs->exists($this->dirtmp) ) {
+
+            $fs->remove($this->dirtmp);
+        }
         $t = new ezcTemplate();
         $t->configuration = eZCluster\CloudSDK::$ezcTemplateConfiguration;
         $t->send->access_key = (string) eZCluster\CloudSDK::$config['access_key'];
@@ -93,10 +102,15 @@ class environment
         
         file_put_contents("/home/ec2-user/.s3cfg", $t->process('s3cfg.ezt'));
         
+
         if (! file_exists($this->dir)) {
-            eZCluster\ClusterTools::mkdir($this->dir, eZCluster\CloudSDK::USER, 0777);
+            eZCluster\ClusterTools::mkdir($dirtmp, eZCluster\CloudSDK::USER, 0777);
         }
         chmod($this->dir, 0777);
+        if (! file_exists($this->dirtmp)) {
+            eZCluster\ClusterTools::mkdir($this->dirtmp, eZCluster\CloudSDK::USER, 0777);
+        }
+        chmod($this->dirtmp, 0777);
         if (isset($this->environment->bootstrap->script)){
             $bootstrap_script = (string)$this->environment->bootstrap->script[0];
         }
@@ -179,9 +193,9 @@ class environment
         $env["COMPOSER_NO_INTERACTION"] = "1";
         $scm = (string) $this->environment["scm"];
         $script = (string) $this->environment["script"];
-        chmod($this->dir, 0777);
-        chown($this->dir, eZCluster\CloudSDK::USER);
-        chgrp($this->dir, eZCluster\CloudSDK::USER);
+        chmod($this->dirtmp, 0777);
+        chown($this->dirtmp, eZCluster\CloudSDK::USER);
+        chgrp($this->dirtmp, eZCluster\CloudSDK::USER);
         // set vars
         if (! empty($scm)) {
             if (strpos($scm, 'svn') !== false) {
@@ -231,10 +245,10 @@ class environment
         }
         //checkout & execute
         if (! empty($scm) and empty($script) and empty( $bootstrap_script )) {
-            $file = $this->dir . "/build";
+            $file = $this->dirtmp . "/build";
             if (strpos($scm, 'svn') !== false) {
-                if (! is_dir($this->dir . "/.svn")) {
-                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $env["USER"]. " --password ". $env["PASSWORD"]. " " . $env["BRANCH"] . " " . $this->dir);
+                if (! is_dir($this->dirtmp . "/.svn")) {
+                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $env["USER"]. " --password ". $env["PASSWORD"]. " " . $env["BRANCH"] . " " . $this->dirtmp);
                 }
             } elseif (strpos($scm, 'git') !== false) {
                 
@@ -244,25 +258,25 @@ class environment
                     "--branch",
                     $env["BRANCH"],
                     "--single-branch",
-                    $this->dir
-                )), $env, $this->dir);
+                    $this->dirtmp
+                )), $env, $this->dirtmp);
             }
             if(file_exists($file)){
                 chmod( $file, 0755);
-                $this->run($file, $env, $this->dir);
+                $this->run($file, $env, $this->dirtmp);
             }
         }
         if (! empty($script) and empty($bootstrap_script)) {
-            $file = $this->dir . "/build";
+            $file = $this->dirtmp . "/build";
 
             file_put_contents( $file, file_get_contents( $script ));
 
             chmod( $file, 0755);
-            $this->run($file, $env, $this->dir);
+            $this->run($file, $env, $this->dirtmp);
         }
         if (! empty($bootstrap_script)) {
             $script = $this->environment->bootstrap->script[0];
-            $file = tempnam($this->dir, "script_");
+            $file = tempnam($this->dirtmp, "script_");
             $patterns = array();
             $patterns[] = '/\[ENVIRONMENT\]/';
             $patterns[] = '/\[DATABASE_NAME\]/';
@@ -305,17 +319,26 @@ class environment
             $bootstrap_script = preg_replace($patterns, $replacements, ltrim((string) $bootstrap_script));
             file_put_contents($file, $bootstrap_script);
             chmod( $file, 0755);
+            $varfile= "";
+            foreach( $env as $key => $var ){
+                $varfile = "$key=\"$var\"\n";
+            }
+            file_put_contents($this->dirtmp. "/variables",$varfile);
+            chmod( "$this->dirtmp. "/variables, 0755);
             // execute as non root
-            $this->run($file, $env, $this->dir);
+            $this->run($file, $env, $this->dirtmp);
             if (file_exists($file)) {
                 unlink($file);
             }
-            eZCluster\ClusterTools::mkdir($this->docroot, eZCluster\CloudSDK::USER, 0777);
+            eZCluster\ClusterTools::mkdir($this->docroottmp, eZCluster\CloudSDK::USER, 0777);
         }
 
-        chmod($this->dir, 0777);
-        chown($this->dir, eZCluster\CloudSDK::USER);
-        chgrp($this->dir, eZCluster\CloudSDK::USER);
+        chmod($this->dirtmp, 0777);
+        chown($this->dirtmp, eZCluster\CloudSDK::USER);
+        chgrp($this->dirtmp, eZCluster\CloudSDK::USER);
+        rename( $this->dir , $this->dir. ".new" );
+        rename( $this->dirtmp , $this->dir );
+        unlink( $this->dir. ".new" );
     }
 
     function run($command, $env = array(), $wd = null)
