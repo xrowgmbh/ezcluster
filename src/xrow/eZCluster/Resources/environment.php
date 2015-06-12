@@ -89,7 +89,7 @@ class environment
 
     public function setup()
     {
-        $fs = new \Symfony\Component\Filesystem();
+        $fs = new \Symfony\Component\Filesystem\Filesystem();
         
         if ( $fs->exists($this->dirtmp) ) {
 
@@ -237,12 +237,17 @@ class environment
                 } else {
                     $env["BRANCH"] = $this->environment['branch'];
                 }
-                $git_rev = shell_exec("/usr/bin/git ls-remote " . $env["SCM"] . " " . $env["BRANCH"] . " HEAD");
-                $git_rev = str_replace("HEAD","",$git_rev);
-                $git_rev = str_replace(" ","",$git_rev);
+                if ( $env["BRANCH"] ){
+                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $env["SCM"] . " HEAD");
+                }
+                else {
+                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $env["SCM"] . " " . $env["BRANCH"] );
+                }
+                list( $git_rev, $branch ) = preg_split("/[\s,]+/", $git_rev, 2 );
                 $env["REVISION"] = $git_rev;
             }
         }
+        
         //checkout & execute
         if (! empty($scm) and empty($script) and empty( $bootstrap_script )) {
             $file = $this->dirtmp . "/build";
@@ -261,18 +266,10 @@ class environment
                     $this->dirtmp
                 )), $env, $this->dirtmp);
             }
-            if(file_exists($file)){
-                chmod( $file, 0755);
-                $this->run($file, $env, $this->dirtmp);
-            }
         }
         if (! empty($script) and empty($bootstrap_script)) {
             $file = $this->dirtmp . "/build";
-
             file_put_contents( $file, file_get_contents( $script ));
-
-            chmod( $file, 0755);
-            $this->run($file, $env, $this->dirtmp);
         }
         if (! empty($bootstrap_script)) {
             $script = $this->environment->bootstrap->script[0];
@@ -318,27 +315,28 @@ class environment
             
             $bootstrap_script = preg_replace($patterns, $replacements, ltrim((string) $bootstrap_script));
             file_put_contents($file, $bootstrap_script);
-            chmod( $file, 0755);
-            $varfile= "";
-            foreach( $env as $key => $var ){
-                $varfile = "$key=\"$var\"\n";
-            }
-            file_put_contents($this->dirtmp. "/variables",$varfile);
-            chmod( "$this->dirtmp. "/variables, 0755);
-            // execute as non root
-            $this->run($file, $env, $this->dirtmp);
-            if (file_exists($file)) {
-                unlink($file);
-            }
-            eZCluster\ClusterTools::mkdir($this->docroottmp, eZCluster\CloudSDK::USER, 0777);
         }
+        //store vars for later execution
+        $varfile= "";
+        foreach( $env as $key => $var ){
+            $varfile .= "$key=\"$var\"\n";
+        }
+        file_put_contents($this->dirtmp . "/variables",$varfile);
+        chmod( $this->dirtmp . "/variables", 0755);
 
+        chmod( $file, 0755);
+        $this->run($file, $env, $this->dirtmp);
+        if (file_exists($file)) {
+            unlink($file);
+        }
         chmod($this->dirtmp, 0777);
         chown($this->dirtmp, eZCluster\CloudSDK::USER);
         chgrp($this->dirtmp, eZCluster\CloudSDK::USER);
+        eZCluster\ClusterTools::mkdir($this->docroottmp, eZCluster\CloudSDK::USER, 0777);
         rename( $this->dir , $this->dir. ".new" );
         rename( $this->dirtmp , $this->dir );
         unlink( $this->dir. ".new" );
+        unlink( $this->dirtmp . "/variables" );
     }
 
     function run($command, $env = array(), $wd = null)

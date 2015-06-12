@@ -152,6 +152,7 @@ class db extends Abstracts\xrowEC2Resource
 
     public static function initDB($dsn, $dbmaster)
     {
+
         $dbmaster->query("SET NAMES utf8");
         $rows = $dbmaster->query('SHOW DATABASES');
         $dbs_exists = array();
@@ -165,7 +166,12 @@ class db extends Abstracts\xrowEC2Resource
         }
         
         $dbdetails = ezcDbFactory::parseDSN($dsn);
-
+        if ( !isset( $GLOBALS["database"]["users"][$dbdetails['username']] ) ){
+            $GLOBALS["database"]["users"][$dbdetails['username']] = $dbdetails['password'];
+        }
+        if( $GLOBALS["database"]["users"][$dbdetails['username']] != $dbdetails['password'] ){
+        	throw new \Exception( "Database user " . $dbdetails['username'] . " with different password found." );
+        }
         if (! in_array($dbdetails['database'], $dbs_exists)) {
             $dbmaster->query('CREATE DATABASE IF NOT EXISTS ' . $dbdetails['database'] . ' CHARACTER SET utf8 COLLATE utf8_general_ci');
         }
