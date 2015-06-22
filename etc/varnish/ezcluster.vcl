@@ -179,6 +179,14 @@ sub vcl_deliver
 
         return (restart);
     }
+    //Fallback for old or non eZ applications
+    if (req.restarts == 0
+        && req.http.x-fos-original-url
+        && resp.http.content-type != "application/vnd.fos.user-context-hash"
+    ) {
+        set req.url = req.http.x-fos-original-url;
+        return (restart);
+    }
     // If we get here, this is a real response that gets sent to the client.
 
     // Remove the vary on context user hash, this is nothing public. Keep all
