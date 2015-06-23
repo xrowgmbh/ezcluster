@@ -332,8 +332,8 @@ class environment
         chown($this->dirtmp, eZCluster\CloudSDK::USER);
         chgrp($this->dirtmp, eZCluster\CloudSDK::USER);
         eZCluster\ClusterTools::mkdir($this->docroottmp, eZCluster\CloudSDK::USER, 0777);
-        rename( $this->dir , $this->dir. ".new" );
-        rename( $this->dirtmp , $this->dir );
+        shell_exec("mv ".$this->dir." ".$this->dir. ".new");
+        shell_exec("mv ".$this->dirtmp." ".$this->dir);
         shell_exec("rm -rf ".$this->dir. ".new");
         shell_exec("rm -rf ".$this->dirtmp . "/variables");
     }
