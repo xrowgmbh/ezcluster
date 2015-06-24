@@ -100,12 +100,11 @@ class environment
         $t->configuration = eZCluster\CloudSDK::$ezcTemplateConfiguration;
         $t->send->access_key = (string) eZCluster\CloudSDK::$config['access_key'];
         $t->send->secret_key = (string) eZCluster\CloudSDK::$config['secret_key'];
-        
+
         file_put_contents("/home/ec2-user/.s3cfg", $t->process('s3cfg.ezt'));
-        
 
         if (! file_exists($this->dir)) {
-            eZCluster\ClusterTools::mkdir($dirtmp, eZCluster\CloudSDK::USER, 0777);
+            eZCluster\ClusterTools::mkdir($this->dir, eZCluster\CloudSDK::USER, 0777);
         }
         chmod($this->dir, 0777);
         if (! file_exists($this->dirtmp)) {
@@ -342,10 +341,10 @@ class environment
         chown($this->dirtmp, eZCluster\CloudSDK::USER);
         chgrp($this->dirtmp, eZCluster\CloudSDK::USER);
         eZCluster\ClusterTools::mkdir($this->docroottmp, eZCluster\CloudSDK::USER, 0777);
-        rename( $this->dir , $this->dir. ".new" );
-        rename( $this->dirtmp , $this->dir );
-        unlink( $this->dir. ".new" );
-        unlink( $this->dirtmp . "/variables" );
+        shell_exec("mv ".$this->dir." ".$this->dir. ".new");
+        shell_exec("mv ".$this->dirtmp." ".$this->dir);
+        shell_exec("rm -rf ".$this->dir. ".new");
+        shell_exec("rm -rf ".$this->dirtmp . "/variables");
     }
 
     function run($command, $env = array(), $wd = null)
