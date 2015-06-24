@@ -341,10 +341,10 @@ class environment
         chown($this->dirtmp, eZCluster\CloudSDK::USER);
         chgrp($this->dirtmp, eZCluster\CloudSDK::USER);
         eZCluster\ClusterTools::mkdir($this->docroottmp, eZCluster\CloudSDK::USER, 0777);
-        shell_exec("mv ".$this->dir." ".$this->dir. ".new");
-        shell_exec("mv ".$this->dirtmp." ".$this->dir);
-        shell_exec("rm -rf ".$this->dir. ".new");
-        shell_exec("rm -rf ".$this->dirtmp . "/variables");
+        $fs->rename( $this->dir, $this->dir. ".new" );
+        $fs->rename( $this->dirtmp, $this->dir );
+        $fs->remove( $this->dir . ".new" );
+        $fs->remove( $this->dir . "/variables" );
     }
 
     function run($command, $env = array(), $wd = null)
