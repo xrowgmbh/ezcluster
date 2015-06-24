@@ -6,6 +6,7 @@ use \ezcTemplateConfiguration;
 use \ezcTemplateNoContext;
 use \ezcTemplate;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Finder\Finder;
 
 class environment
 {
@@ -328,6 +329,14 @@ class environment
         $this->run($file, $env, $this->dirtmp);
         if (file_exists($file)) {
             unlink($file);
+        }
+        $cachedirs = array( "/ezpublish/cache" ,"/app/cache" );
+        foreach( $cachedirs as $cachedir ){
+            if ( $fs->exists( $this->dirtmp . $cachedir ) ){
+                $finder = new Finder();
+                $finder->directories()->in( $this->dirtmp . $cachedir );
+                $fs->remove( $finder );
+            }
         }
         chmod($this->dirtmp, 0777);
         chown($this->dirtmp, eZCluster\CloudSDK::USER);
