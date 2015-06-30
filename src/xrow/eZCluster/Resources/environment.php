@@ -343,6 +343,12 @@ class environment
         eZCluster\ClusterTools::mkdir($this->docroottmp, eZCluster\CloudSDK::USER, 0777);
         $fs->rename( $this->dir, $this->dir. ".new" );
         $fs->rename( $this->dirtmp, $this->dir );
+
+        // Remove wehn bug is fixed in 5.x https://jira.ez.no/browse/EZP-23710
+        if ( $fs->exists( $this->dir . "/ezpublish/console" ) ){
+            $this->run( "php ezpublish/console assets:install --symlink web", $env, $this->dir );
+        }
+
         $fs->remove( $this->dir . ".new" );
         $fs->remove( $this->dir . "/variables" );
     }
