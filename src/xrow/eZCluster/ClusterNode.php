@@ -28,8 +28,6 @@ class ClusterNode extends Resources\instance
 
     const HTTP_CONFIG_FILE = '/etc/httpd/sites/environment.conf';
 
-    const HAPROXY_CONFIG_FILE = '/etc/haproxy/haproxy.cfg';
-
     const PHP_DEBUGGER_INI = '/etc/php.d/debugger.ini';
 
     const PHP_OPCACHE_INI = '/etc/php.d/opcache.ini';
@@ -574,42 +572,6 @@ class ClusterNode extends Resources\instance
             unlink("/var/www/html/index.php");
         }
         symlink("/usr/share/ezcluster/src/probe/index.php", "/var/www/html/index.php");
-        file_put_contents(self::HAPROXY_CONFIG_FILE, $t->process('haproxy.ezt'));
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/certificate[ @name = 'ssl' ]");
-        if (isset($result[0])) {
-            file_put_contents("/etc/ssl/certs/haproxy.pem", (string) $result[0]);
-        } else {
-            $str = <<<EOD
------BEGIN CERTIFICATE-----
-MIIBrzCCARgCCQCfMsCGwq31yzANBgkqhkiG9w0BAQUFADAcMRowGAYDVQQDExF3
-d3cuZXhjZWxpYW5jZS5mcjAeFw0xMjA5MDQwODU3MzNaFw0xMzA5MDQwODU3MzNa
-MBwxGjAYBgNVBAMTEXd3dy5leGNlbGlhbmNlLmZyMIGfMA0GCSqGSIb3DQEBAQUA
-A4GNADCBiQKBgQDFxSTUwX5RD4AL2Ya5t5PAaNjcwPa3Km40uaPKSHlU8AMydxC1
-wB4L0k3Ms9uh98R+kIJS+TxdfDaYxk/GdDYI1CMm4TM+BLHGAVA2DeNf2hBhBRKb
-TAgxCxXwORJQSB/B+1r0/ZiQ2ig5Jzr8xGHz+tBsHYZ+t+RmjZPQFjnlewIDAQAB
-MA0GCSqGSIb3DQEBBQUAA4GBABqVuloGWHReSGLY1yAs20uhJ3j/9SvtoueyFBag
-z5jX4BNO/4yhpKEpCGmzYtjr7us3v/s0mKoIVvAgah778rCZW3kF1Y6xR6TYqZna
-1ryKB50/MJg9PC4LNL+sAu+WSslOf6+6Ru5N3JjhIZST8edJsGDi6/5HTKoqyvkp
-wOMn
------END CERTIFICATE-----
------BEGIN RSA PRIVATE KEY-----
-MIICXgIBAAKBgQDFxSTUwX5RD4AL2Ya5t5PAaNjcwPa3Km40uaPKSHlU8AMydxC1
-wB4L0k3Ms9uh98R+kIJS+TxdfDaYxk/GdDYI1CMm4TM+BLHGAVA2DeNf2hBhBRKb
-TAgxCxXwORJQSB/B+1r0/ZiQ2ig5Jzr8xGHz+tBsHYZ+t+RmjZPQFjnlewIDAQAB
-AoGBALUeVhuuVLOB4X94qGSe1eZpXunUol2esy0AMhtIAi4iXJsz5Y69sgabg/qL
-YQJVOZO7Xk8EyB7JaerB+z9BIFWbZwS9HirqR/sKjjbhu/rAQDgjVWw2Y9sjPhEr
-CEAvqmQskT4mY+RW4qz2k8pe4HKq8NAFwbe8iNP7AySP3K4BAkEA4ZPBagtlJzrU
-7Tw4BvQJhBmvNYEFviMScipHBlpwzfW+79xvZhTxtsSBHAM9KLbqO33VmJ3C/L/t
-xukW8SO6ewJBAOBxU0TfS0EzcRQJ4sn78G6hTjjLwJM2q4xuSwLQDVaWwtXDI6HE
-jb7HePaGBGnOrlXxEOFQZCVdDaLhX0zcEQECQQDHcvc+phioGRKPOAFp1HhdfsA2
-FIBZX3U90DfAXFMFKFXMiyFMJxSZPyHQ/OQkjaaJN3eWW1c+Vw0MJKgOSkLlAkEA
-h8xpqoFEgkXCxHIa00VpuzZEIt89PJVWhJhzMFd7yolbh4UTeRx4+xasHNUHtJFG
-MF+0a+99OJIt3wBn7hQ1AQJACScT3p6zJ4llm59xTPeOYpSXyllR4GMilsGIRNzT
-RGYxcvqR775RkAgE+5DHmAkswX7TBaxcO6+C1+LJEwFRxw==
------END RSA PRIVATE KEY-----
-EOD;
-            file_put_contents("/etc/ssl/certs/haproxy.pem", $str);
-        }
     }
 
     public function setupMounts()
@@ -1208,7 +1170,6 @@ EOD;
             system('systemctl start varnish');
             usleep(1000000);
             system('systemctl start varnishncsa');
-            system('systemctl start haproxy');
             if (! in_array('dev', $services) and $this->isLoadBalancerMember()) {
                 try {
                     $lb = new lb($this->getLB());
@@ -1245,7 +1206,6 @@ EOD;
                 $lb = new lb($this->getLB());
                 $lb->deregister($this);
             }
-            system('systemctl stop haproxy');
             system('systemctl stop varnishncsa');
             system('systemctl stop varnish');
             system('systemctl stop httpd');
