@@ -244,7 +244,6 @@ quit
                     
                     if ($args[1]) {
                         $environment = new Resources\environment($args[1]);
-                        $environment->clean();
                         $environment->setup();
                         ClusterNode::getInstance()->setupCrons();
                     } else {
