@@ -52,7 +52,7 @@ class instance extends Abstracts\xrowEC2Resource
                 return new self( (string) $result[0]['name'] );
             }
         }
-        throw new Exception('Host "' . $host . '" not known in ezcluster.xml');
+        throw new \Exception('Host "' . $host . '" not known in ezcluster.xml');
     }
     function name()
     {
@@ -73,7 +73,7 @@ class instance extends Abstracts\xrowEC2Resource
                 return (string) $result[0]['name'];
             }
             
-            throw new Exception('Host "' . $host . '" not known in ezcluster.xml');
+            throw new \Exception('Host "' . $host . '" not known in ezcluster.xml');
         }
         return $host;
     }
