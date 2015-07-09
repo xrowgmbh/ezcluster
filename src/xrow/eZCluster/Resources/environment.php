@@ -93,9 +93,13 @@ class environment
         $fs = new \Symfony\Component\Filesystem\Filesystem();
         
         if ( $fs->exists($this->dirtmp) ) {
-
             $fs->remove($this->dirtmp);
         }
+
+        if ( $fs->exists($this->dirtmp . ".new" ) ) {
+            $fs->remove( $this->dir . ".new" );
+        }
+
         $t = new ezcTemplate();
         $t->configuration = eZCluster\CloudSDK::$ezcTemplateConfiguration;
         $t->send->access_key = (string) eZCluster\CloudSDK::$config['access_key'];
