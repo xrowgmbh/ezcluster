@@ -357,12 +357,14 @@ export KERN_DIR
         {
             return false;
         }
+        $old = umask(0);
         mkdir( $dir, $permissions, true );
         if ( $user !== false )
         {
             chown( $dir, $user );
             chgrp( $dir, $user );
         }
+        umask($old);
     }
 
     static public function cleanString( $name )

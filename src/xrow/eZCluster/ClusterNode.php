@@ -618,20 +618,21 @@ class ClusterNode extends Resources\instance
         $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'admin' and @name='" . $this->name() . "']";
         
         $result = self::$config->xpath($xp);
-        
+        $pathprefix = "/var/log/ezcluster";
+        ClusterTools::mkdir( $pathprefix, "root", 0777);
         if (is_array($result) and count($result) > 0) {
             $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment[cron]";
             $result = self::$config->xpath($xp);
             foreach ($result as $env) {
                 $path = CloudSDK::SITES_ROOT . '/' . (string) $env['name'];
-                
+                $log = $pathprefix . '/' . (string) $env['name'] . ".cron.log";
                 foreach ($env->xpath('cron') as $cron) {
                     if ((string) $cron['timing'] and (string) $cron['group']) {
                         $memory_limit = (isset($cron['memory_limit'])) ? (string) $cron['memory_limit'] : self::CRON_DEFAULT_MEMORY_LIMIT;
-                        $crondata .= (string) $cron['timing'] . " cd $path && php -d memory_limit=$memory_limit ezpublish/console ezpublish:legacy:script runcronjobs.php " . (string) $cron['group'] . " >> $path/cron.log 2>&1\n";
+                        $crondata .= (string) $cron['timing'] . " cd $path && php -d memory_limit=$memory_limit ezpublish/console ezpublish:legacy:script runcronjobs.php " . (string) $cron['group'] . " >> $log 2>&1\n";
                     }
                     if ((string) $cron['timing'] and (string) $cron['cmd']) {
-                        $crondata .= (string) $cron['timing'] . " cd $path && " . (string) $cron['cmd'] . " >> $path/cron.log 2>&1\n";
+                        $crondata .= (string) $cron['timing'] . " cd $path && " . (string) $cron['cmd'] . " >> $log 2>&1\n";
                     }
                 }
             }
