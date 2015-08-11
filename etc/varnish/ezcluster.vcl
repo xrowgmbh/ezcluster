@@ -130,7 +130,8 @@ sub vcl_backend_response {
     if (bereq.http.accept ~ "application/vnd.fos.user-context-hash"
         && beresp.status >= 500
     ) {
-        return (abandon);
+        set beresp.http.user-context-error = "1";
+        return (deliver);
     }
     set beresp.http.X-Backend = beresp.backend.name;
     if (beresp.http.Surrogate-Control ~ "ESI/1.0")
@@ -170,6 +171,10 @@ sub vcl_backend_response {
 }
 sub vcl_deliver 
 {
+    if ( req.restarts == 0 && resp.http.user-context-error ) 
+    {
+        return (deliver);
+    }
     // On receiving the hash response, copy the hash header to the original
     // request and restart.
     if (req.restarts == 0
