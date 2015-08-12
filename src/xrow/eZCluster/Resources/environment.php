@@ -338,11 +338,13 @@ class environment
         
         $varfile= "";
         foreach( $this->parameter as $key => $var ){
+            $varfile .= "$key=\"$var\"\n";
+            $varfile .= "SYMFONY__" . str_replace( "_", "__", $key ) . "=\"$var\"\n";
             $varfile .= "export $key=\"$var\"\n";
             $varfile .= "export SYMFONY__" . str_replace( "_", "__", $key ) . "=\"$var\"\n";
         }
-        file_put_contents($this->dirtmp . "/variables.bash",$varfile);
-        chmod( $this->dirtmp . "/variables.bash", 0755);
+        file_put_contents($this->dirtmp . "/variables.export",$varfile);
+        chmod( $this->dirtmp . "/variables.export", 0755);
 
         chmod( $file, 0755);
         $this->run($file, $this->parameter, $this->dirtmp);
