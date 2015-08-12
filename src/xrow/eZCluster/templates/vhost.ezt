@@ -52,6 +52,8 @@ AcceptPathInfo On
   AllowOverride All
 </Directory>
 
+IncludeOptional /etc/httpd/sites/{$vhost->name}.*.conf
+
 CustomLog /dev/null common
 </VirtualHost>
 {/foreach}

@@ -12,6 +12,7 @@ use xrow\eZCluster\Resources;
 use Ssh;
 use \ezcDbFactory;
 use \ezcDbInstance;
+use xrow\eZCluster\Resources\environment;
 
 class ClusterNode extends Resources\instance
 {
@@ -539,25 +540,9 @@ class ClusterNode extends Resources\instance
         $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment";
         $result = self::$config->xpath($xp);
         foreach ($result as $env) {
-            $vhost = new stdClass();
-            $dir = CloudSDK::SITES_ROOT . '/' . (string) $env['name'];
-            if (isset($env['docroot'])) {
-                $dir .= '/' . (string) $env['docroot'];
-            }
-            
-            $vhost->dir = $dir;
-            
-            if (! file_exists($dir)) {
-                mkdir($dir, 0777, true);
-                chown($dir, CloudSDK::USER);
-                chgrp($dir, CloudSDK::USER);
-            }
-            $vhost->name = (string) $env['name'];
-            $vhost->hosts = array();
-            foreach ($env->xpath('hostname') as $host) {
-                $vhost->hosts[] = (string) $host;
-            }
-            $vhosts[] = $vhost;
+            $environment = new environment((string)$env["name"]);
+            $vhosts[] = $environment->getVHost();
+            $environment->createHTTPVariablesFile();
         }
         $t = new ezcTemplate();
         $t->configuration = CloudSDK::$ezcTemplateConfiguration;
