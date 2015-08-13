@@ -51,6 +51,9 @@ class environment
         foreach ( $this->environment->attributes() as $key => $value ){
             $this->parameter[strtoupper($key)] = $value;
         }
+        if (!isset($this->parameter["SYMFONY_ENV"])){
+            $this->parameter["SYMFONY_ENV"] = "prod";
+        }
         if (! empty($this->parameter["SCM"])) {
             if (strpos($this->parameter["SCM"], 'svn') !== false) {
                 if (strpos($this->parameter["SCM"], "/", strlen($this->parameter["SCM"]) ) === false )
