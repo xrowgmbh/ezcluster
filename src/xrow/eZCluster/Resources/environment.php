@@ -63,11 +63,8 @@ class environment
                 } else {
                     $url = new \ezcUrl( $this->parameter["SCM"] . (string) $this->environment['branch'] );
                 }
-                $this->parameter["USER"] = $url->user;
-                $this->parameter["PASSWORD"] = $url->pass;
                 $this->parameter["SVN_USER"] = $url->user;
                 $this->parameter["SVN_PASS"] = $url->pass;
-                $this->parameter["PASSWORD"] = $url->pass;
                 $url->user = null;
                 $url->pass = null;
                 $this->parameter["BRANCH"] = $url->buildUrl();
@@ -83,9 +80,8 @@ class environment
         
             }elseif (strpos($this->parameter["SCM"], 'git') !== false) {
                 $url = new \ezcUrl($this->parameter["SCM"]);
-                $this->parameter["USER"] = $url->user;
-                $this->parameter["PASSWORD"] = $url->pass;
-                $this->parameter["PASS"] = $url->pass;
+                $this->parameter["GIT_USER"] = $url->user;
+                $this->parameter["GIT_PASSWORD"] = $url->pass;
                 if (! isset($this->environment['branch'])) {
                     $this->parameter["BRANCH"] = "master";
                 } else {
@@ -166,6 +162,28 @@ class environment
         $this->parameter["LANG"] = "en_US.UTF-8";
         $this->parameter["COMPOSER_NO_INTERACTION"] = "1";
     }
+    public function createYAMLParametersFile()
+    {
+        $fs = new \Symfony\Component\Filesystem\Filesystem();
+        
+        $parameter = array();
+        foreach( $this->parameter as $key => $var ){
+            $parameter[strtolower(str_replace( "_", ".", $key ))] = $var;
+        }
+        $dumper = new \Symfony\Component\Yaml\Dumper();
+        $yaml = $dumper->dump(array( "parameters" => $parameter ), 2);
+        
+        if (file_exists($this->dirtmp . "/ezpublish/config")){
+            $dir = $this->dirtmp . "/ezpublish/config";
+        }
+        elseif (file_exists($this->dirtmp . "/app/config"))
+        {
+            $dir = $this->dirtmp . "/app/config";
+        }
+        if ($dir){
+            $fs->dumpFile( $dir . "/parameters.yml", $yaml );
+        }
+    }
     public function createHTTPVariablesFile()
     {
         $fs = new \Symfony\Component\Filesystem\Filesystem();
@@ -175,7 +193,7 @@ class environment
             $varfile .= "SetEnv    SYMFONY__" . str_replace( "_", "__", $key ) . " \"$var\"\n";
         }
         
-        $file = "/etc/httpd/sites/" . $this->name . ".variables.conf";
+        $file = "/etc/httpd/sites" . "/" . $this->name . ".variables.conf";
         $fs->dumpFile( $file, $varfile );
     }
     public function getVHost()
@@ -330,27 +348,18 @@ class environment
         //store vars for later execution
         $varfile= "";
         foreach( $this->parameter as $key => $var ){
-            $varfile .= "$key=\"$var\"\n";
-            $varfile .= "SYMFONY__" . str_replace( "_", "__", $key ) . "=\"$var\"\n";
-        }
-        file_put_contents($this->dirtmp . "/variables",$varfile);
-        chmod( $this->dirtmp . "/variables", 0755);
-        
-        $varfile= "";
-        foreach( $this->parameter as $key => $var ){
-            $varfile .= "$key=\"$var\"\n";
-            $varfile .= "SYMFONY__" . str_replace( "_", "__", $key ) . "=\"$var\"\n";
             $varfile .= "export $key=\"$var\"\n";
             $varfile .= "export SYMFONY__" . str_replace( "_", "__", $key ) . "=\"$var\"\n";
         }
-        file_put_contents($this->dirtmp . "/variables.export",$varfile);
-        chmod( $this->dirtmp . "/variables.export", 0755);
+        file_put_contents($this->dirtmp . "/variables.bash",$varfile);
+        chmod( $this->dirtmp . "/variables.bash", 0755);
 
         chmod( $file, 0755);
         $this->run($file, $this->parameter, $this->dirtmp);
         if (file_exists($file)) {
             unlink($file);
         }
+        $this->createYAMLParametersFile();
         $cachedirs = array( "/ezpublish/cache" ,"/app/cache" );
         foreach( $cachedirs as $cachedir ){
             if ( $fs->exists( $this->dirtmp . $cachedir ) ){
