@@ -52,6 +52,21 @@ AcceptPathInfo On
   AllowOverride All
 </Directory>
 
+{if $vhost->parameters["SYMFONY_ENV"]}
+
+SetEnv SYMFONY_ENV {$vhost->parameters["SYMFONY_ENV"]}
+
+{if $vhost->parameters["SYMFONY_ENV"] == "dev"}
+SetEnv USE_DEBUGGING 1
+SetEnv ENVIRONMENT {$vhost->parameters["SYMFONY_ENV"]}
+{/if}
+
+{/if}
+
+SetEnv USE_HTTP_CACHE 0
+SetEnv TRUSTED_PROXIES "127.0.0.1"
+SetEnv USE_APC_CLASSLOADER 0
+
 IncludeOptional /etc/httpd/sites/{$vhost->name}.*.conf
 
 CustomLog /dev/null common

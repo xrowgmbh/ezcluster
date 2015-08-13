@@ -47,57 +47,57 @@ class environment
             throw new \Exception("Name not given. Please define a enviroment.");
         }
         // set vars
-        $this->parameter = array();
+        $this->parameters = array();
         foreach ( $this->environment->attributes() as $key => $value ){
-            $this->parameter[strtoupper($key)] = $value;
+            $this->parameters[strtoupper($key)] = (string) $value;
         }
-        if (!isset($this->parameter["SYMFONY_ENV"])){
-            $this->parameter["SYMFONY_ENV"] = "prod";
+        if (!isset($this->parameters["SYMFONY_ENV"])){
+            $this->parameters["SYMFONY_ENV"] = "prod";
         }
-        if (! empty($this->parameter["SCM"])) {
-            if (strpos($this->parameter["SCM"], 'svn') !== false) {
-                if (strpos($this->parameter["SCM"], "/", strlen($this->parameter["SCM"]) ) === false )
+        if (! empty($this->parameters["SCM"])) {
+            if (strpos($this->parameters["SCM"], 'svn') !== false) {
+                if (strpos($this->parameters["SCM"], "/", strlen($this->parameters["SCM"]) ) === false )
                 {
-                    $this->parameter["SCM"] .= "/";
+                    $this->parameters["SCM"] .= "/";
                 }
         
                 if (! isset($this->environment['branch'])) {
-                    $url = new \ezcUrl( $this->parameter["SCM"] );
+                    $url = new \ezcUrl( $this->parameters["SCM"] );
                 } else {
-                    $url = new \ezcUrl( $this->parameter["SCM"] . (string) $this->environment['branch'] );
+                    $url = new \ezcUrl( $this->parameters["SCM"] . (string) $this->environment['branch'] );
                 }
-                $this->parameter["SVN_USER"] = $url->user;
-                $this->parameter["SVN_PASS"] = $url->pass;
+                $this->parameters["SVN_USER"] = $url->user;
+                $this->parameters["SVN_PASS"] = $url->pass;
                 $url->user = null;
                 $url->pass = null;
-                $this->parameter["BRANCH"] = $url->buildUrl();
-                if (strpos($this->parameter["BRANCH"], "/", strlen($this->parameter["BRANCH"]) ) === false )
+                $this->parameters["BRANCH"] = $url->buildUrl();
+                if (strpos($this->parameters["BRANCH"], "/", strlen($this->parameters["BRANCH"]) ) === false )
                 {
-                    $this->parameter["BRANCH"] .= "/";
+                    $this->parameters["BRANCH"] .= "/";
                 }
                 svn_auth_set_parameter(SVN_AUTH_PARAM_DONT_STORE_PASSWORDS, false);
                 svn_auth_set_parameter(PHP_SVN_AUTH_PARAM_IGNORE_SSL_VERIFY_ERRORS, true);
-                svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_USERNAME, $this->parameter["SVN_USER"]);
-                svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_PASSWORD, $this->parameter["SVN_PASS"]);
-                $this->parameter["REVISION"] = svn_log($this->parameter["BRANCH"],SVN_REVISION_HEAD, 1, 1)[0]['rev'];
+                svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_USERNAME, $this->parameters["SVN_USER"]);
+                svn_auth_set_parameter(SVN_AUTH_PARAM_DEFAULT_PASSWORD, $this->parameters["SVN_PASS"]);
+                $this->parameters["REVISION"] = svn_log($this->parameters["BRANCH"],SVN_REVISION_HEAD, 1, 1)[0]['rev'];
         
-            }elseif (strpos($this->parameter["SCM"], 'git') !== false) {
-                $url = new \ezcUrl($this->parameter["SCM"]);
-                $this->parameter["GIT_USER"] = $url->user;
-                $this->parameter["GIT_PASSWORD"] = $url->pass;
+            }elseif (strpos($this->parameters["SCM"], 'git') !== false) {
+                $url = new \ezcUrl($this->parameters["SCM"]);
+                $this->parameters["GIT_USER"] = $url->user;
+                $this->parameters["GIT_PASSWORD"] = $url->pass;
                 if (! isset($this->environment['branch'])) {
-                    $this->parameter["BRANCH"] = "master";
+                    $this->parameters["BRANCH"] = "master";
                 } else {
-                    $this->parameter["BRANCH"] = $this->environment['branch'];
+                    $this->parameters["BRANCH"] = $this->environment['branch'];
                 }
-                if ( $this->parameter["BRANCH"] ){
-                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameter["SCM"] . " HEAD");
+                if ( $this->parameters["BRANCH"] ){
+                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD");
                 }
                 else {
-                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameter["SCM"] . " " . $this->parameter["BRANCH"] );
+                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " " . $this->parameters["BRANCH"] );
                 }
                 list( $git_rev, $branch ) = preg_split("/[\s,]+/", $git_rev, 2 );
-                $this->parameter["REVISION"] = $git_rev;
+                $this->parameters["REVISION"] = $git_rev;
             }
         }
         
@@ -134,48 +134,47 @@ class environment
              * if ($this->getDatabaseSlave()) { $slavedb = ezcDbFactory::parseDSN($this->getDatabaseSlave()); $fields = array( "username", "password", "hostspec" ); foreach ($fields as $field) { if ($slavedb[$field]) { $dbdetails[$field] = $slavedb[$field]; } } }
             */
         }
-        $this->parameter["ENVIRONMENT"] = $this->name;
-        $this->parameter["DATABASE_NAME"] = $dbdetails["database"];
-        $this->parameter["DATABASE_SERVER"] = $dbdetails["hostspec"];
-        $this->parameter["DATABASE_USER"] = $dbdetails["username"];
-        $this->parameter["DATABASE_PASSWORD"] = $dbdetails["password"];
-        $this->parameter["AWS_KEY"] = (string) CloudSDK::$config['access_key'];
-        $this->parameter["AWS_SECRETKEY"] = (string) CloudSDK::$config['secret_key'];
-        $this->parameter["AWS_ACCOUNTID"] = (string) CloudSDK::$config['account_id'];
+        $this->parameters["ENVIRONMENT"] = $this->name;
+        $this->parameters["DATABASE_NAME"] = $dbdetails["database"];
+        $this->parameters["DATABASE_SERVER"] = $dbdetails["hostspec"];
+        $this->parameters["DATABASE_USER"] = $dbdetails["username"];
+        $this->parameters["DATABASE_PASSWORD"] = $dbdetails["password"];
+        $this->parameters["AWS_KEY"] = (string) CloudSDK::$config['access_key'];
+        $this->parameters["AWS_SECRETKEY"] = (string) CloudSDK::$config['secret_key'];
+        $this->parameters["AWS_ACCOUNTID"] = (string) CloudSDK::$config['account_id'];
         $solr_master = ClusterNode::getSolrMasterHost();
         if (instance::current()->ip() == $solr_master or empty($solr_master)) {
             $solr = "http://localhost:8983/solr/" . $this->name;
         } else {
             $solr = "http://" . $solr_master . ":8983/solr/" . $this->name;
         }
-        $this->parameter["SOLR_URL"] = $solr;
+        $this->parameters["SOLR_URL"] = $solr;
         if ( isset( $dfsdetails ) )
         {
-            $this->parameter["DFS_TYPE"] = $dfsdetails["type"];
-            $this->parameter["DFS_DATABASE_NAME"] = $dfsdetails["database"];
-            $this->parameter["DFS_DATABASE_SERVER"] = $dfsdetails["hostspec"];
-            $this->parameter["DFS_DATABASE_USER"] = $dfsdetails["username"];
-            $this->parameter["DFS_DATABASE_PASSWORD"] = $dfsdetails["password"];
-            $this->parameter["DFS_MOUNT"] = $dfsdetails["mount"];
-            $this->parameter["MEMCACHED"] = $dfsdetails["memcached"];
-            $this->parameter["BUCKET"] = $dfsdetails["bucket"];
+            $this->parameters["DFS_TYPE"] = $dfsdetails["type"];
+            $this->parameters["DFS_DATABASE_NAME"] = $dfsdetails["database"];
+            $this->parameters["DFS_DATABASE_SERVER"] = $dfsdetails["hostspec"];
+            $this->parameters["DFS_DATABASE_USER"] = $dfsdetails["username"];
+            $this->parameters["DFS_DATABASE_PASSWORD"] = $dfsdetails["password"];
+            $this->parameters["DFS_MOUNT"] = $dfsdetails["mount"];
+            $this->parameters["MEMCACHED"] = $dfsdetails["memcached"];
+            $this->parameters["BUCKET"] = $dfsdetails["bucket"];
         }
-        $this->parameter["PATH"] = "/sbin:/bin:/usr/sbin:/usr/bin";
-        $this->parameter["HOME"] = "/home/" . CloudSDK::USER;
-        $this->parameter["LANG"] = "en_US.UTF-8";
-        $this->parameter["COMPOSER_NO_INTERACTION"] = "1";
+        $this->parameters["PATH"] = "/sbin:/bin:/usr/sbin:/usr/bin";
+        $this->parameters["HOME"] = "/home/" . CloudSDK::USER;
+        $this->parameters["LANG"] = "en_US.UTF-8";
+        $this->parameters["COMPOSER_NO_INTERACTION"] = "1";
     }
     public function createYAMLParametersFile()
     {
         $fs = new \Symfony\Component\Filesystem\Filesystem();
         
         $parameter = array();
-        foreach( $this->parameter as $key => $var ){
+        foreach( $this->parameters as $key => $var ){
             $parameter[strtolower(str_replace( "_", ".", $key ))] = $var;
         }
         $dumper = new \Symfony\Component\Yaml\Dumper();
         $yaml = $dumper->dump(array( "parameters" => $parameter ), 2);
-        
         if (file_exists($this->dirtmp . "/ezpublish/config")){
             $dir = $this->dirtmp . "/ezpublish/config";
         }
@@ -192,7 +191,7 @@ class environment
         $fs = new \Symfony\Component\Filesystem\Filesystem();
         
         $varfile= "";
-        foreach( $this->parameter as $key => $var ){
+        foreach( $this->parameters as $key => $var ){
             $varfile .= "SetEnv    SYMFONY__" . str_replace( "_", "__", $key ) . " \"$var\"\n";
         }
         
@@ -206,7 +205,7 @@ class environment
         if (isset($this->environment['docroot'])) {
             $dir .= '/' . (string) $this->environment['docroot'];
         }
-        
+        $vhost->parameters = $this->parameters;
         $vhost->dir = $dir;
         
         if (! file_exists($dir)) {
@@ -313,22 +312,22 @@ class environment
         chgrp($this->dirtmp, CloudSDK::USER);
 
         //checkout & execute
-        if (! empty($this->parameter["SCM"]) and empty($script) and empty( $bootstrap_script )) {
+        if (! empty($this->parameters["SCM"]) and empty($script) and empty( $bootstrap_script )) {
             $file = $this->dirtmp . "/build";
-            if (strpos($this->parameter["SCM"], 'svn') !== false) {
+            if (strpos($this->parameters["SCM"], 'svn') !== false) {
                 if (! is_dir($this->dirtmp . "/.svn")) {
-                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $this->parameter["USER"]. " --password ". $this->parameter["PASSWORD"]. " " . $this->parameter["BRANCH"] . " " . $this->dirtmp);
+                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $this->parameters["USER"]. " --password ". $this->parameters["PASSWORD"]. " " . $this->parameters["BRANCH"] . " " . $this->dirtmp);
                 }
-            } elseif (strpos($this->parameter["SCM"], 'git') !== false) {
+            } elseif (strpos($this->parameters["SCM"], 'git') !== false) {
                 
                 $this->run("/usr/bin/git " . join(" ", array(
                     "clone",
-                    $this->parameter["SCM"],
+                    $this->parameters["SCM"],
                     "--branch",
-                    $this->parameter["BRANCH"],
+                    $this->parameters["BRANCH"],
                     "--single-branch",
                     $this->dirtmp
-                )), $this->parameter, $this->dirtmp);
+                )), $this->parameters, $this->dirtmp);
             }
         }
         if (! empty($script) and empty($bootstrap_script)) {
@@ -341,7 +340,7 @@ class environment
             $file = tempnam($this->dirtmp, "script_");
             $patterns = array();
             $replacements = array();
-            foreach( $this->parameter as $key => $value ){
+            foreach( $this->parameters as $key => $value ){
                 $patterns[] = '/\[' . $key . '\]/';
                 $replacements[] = $value;
             }
@@ -350,7 +349,7 @@ class environment
         }
         //store vars for later execution
         $varfile= "";
-        foreach( $this->parameter as $key => $var ){
+        foreach( $this->parameters as $key => $var ){
             $varfile .= "export $key=\"$var\"\n";
             $varfile .= "export SYMFONY__" . str_replace( "_", "__", $key ) . "=\"$var\"\n";
         }
@@ -358,7 +357,8 @@ class environment
         chmod( $this->dirtmp . "/variables.bash", 0755);
 
         chmod( $file, 0755);
-        $this->run($file, $this->parameter, $this->dirtmp);
+        $this->createYAMLParametersFile();
+        $this->run($file, $this->parameters, $this->dirtmp);
         if (file_exists($file)) {
             unlink($file);
         }
