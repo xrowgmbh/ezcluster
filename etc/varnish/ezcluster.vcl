@@ -159,6 +159,18 @@ sub vcl_backend_response {
         set beresp.uncacheable = true;
         return (deliver);  
     }
+    if ( beresp.http.Cache-Control && beresp.http.Cache-Control ~ "no-cache" ) {
+        set beresp.uncacheable = true;
+        return (deliver);  
+    }
+    if ( beresp.http.Cache-Control && beresp.http.Cache-Control ~ "no-store" ) {
+        set beresp.uncacheable = true;
+        return (deliver);  
+    }
+    if ( beresp.http.Cache-Control && beresp.http.Cache-Control ~ "private" ) {
+        set beresp.uncacheable = true;
+        return (deliver);  
+    }
     if (beresp.http.Set-Cookie) {
         set beresp.uncacheable = true;
         return (deliver);
