@@ -164,6 +164,12 @@ class environment
         $this->parameters["HOME"] = "/home/" . CloudSDK::USER;
         $this->parameters["LANG"] = "en_US.UTF-8";
         $this->parameters["COMPOSER_NO_INTERACTION"] = "1";
+        $this->parameters["SECRET"] = uniqid();
+        $this->parameters["MAILER_TRANSPORT"] = "smtp";
+        $this->parameters["MAILER_HOST"] = "127.0.0.1";
+        $this->parameters["MAILER_USER"] = null;
+        $this->parameters["MAILER_PASSWORD"] = null;
+        $this->parameters["LOCAL_FALLBACK"] = "en";
     }
     public function createYAMLParametersFile()
     {
@@ -172,6 +178,7 @@ class environment
         $parameter = array();
         foreach( $this->parameters as $key => $var ){
             $parameter[strtolower(str_replace( "_", ".", $key ))] = $var;
+            $parameter[strtolower( $key )] = $var;
         }
         $dumper = new \Symfony\Component\Yaml\Dumper();
         $yaml = $dumper->dump(array( "parameters" => $parameter ), 2);
