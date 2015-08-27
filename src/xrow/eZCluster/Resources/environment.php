@@ -118,8 +118,10 @@ class environment
                     ClusterTools::mkdir($dfsdetails['mount'], CloudSDK::USER, 0777);
                 }
             }
-            $dfsdetails['memcached'] = (string) $db['memcached'];
-            $dfsdetails['bucket'] = (string) $db['bucket'];
+            if (isset($db['memcached']))
+                $dfsdetails['memcached'] = (string) $db['memcached'];
+            if (isset($db['bucket']))
+                $dfsdetails['bucket'] = (string) $db['bucket'];
         }
         $result = $this->environment->xpath("rds");
         foreach ($result as $db) {
@@ -157,24 +159,20 @@ class environment
             $this->parameters["DFS_DATABASE_USER"] = $dfsdetails["username"];
             $this->parameters["DFS_DATABASE_PASSWORD"] = $dfsdetails["password"];
             $this->parameters["DFS_MOUNT"] = $dfsdetails["mount"];
-            $this->parameters["MEMCACHED"] = $dfsdetails["memcached"];
-            $this->parameters["BUCKET"] = $dfsdetails["bucket"];
+            if (isset($dfsdetails['memcached']))
+                $this->parameters["MEMCACHED"] = $dfsdetails["memcached"];
+            if (isset($dfsdetails['bucket']))
+                $this->parameters["BUCKET"] = $dfsdetails["bucket"];
         }
         $this->parameters["PATH"] = "/sbin:/bin:/usr/sbin:/usr/bin";
         $this->parameters["HOME"] = "/home/" . CloudSDK::USER;
         $this->parameters["LANG"] = "en_US.UTF-8";
         $this->parameters["COMPOSER_NO_INTERACTION"] = "1";
-        $this->parameters["SECRET"] = uniqid();
-        $this->parameters["MAILER_TRANSPORT"] = "smtp";
-        $this->parameters["MAILER_HOST"] = "127.0.0.1";
-        $this->parameters["MAILER_USER"] = null;
-        $this->parameters["MAILER_PASSWORD"] = null;
-        $this->parameters["LOCAL_FALLBACK"] = "en";
     }
     public function createYAMLParametersFile()
     {
         $fs = new \Symfony\Component\Filesystem\Filesystem();
-        
+
         $parameter = array();
         foreach( $this->parameters as $key => $var ){
             $parameter[strtolower(str_replace( "_", ".", $key ))] = $var;
@@ -189,19 +187,22 @@ class environment
         {
             $dir = $this->dirtmp . "/app/config";
         }
-        if ($dir){
+        if (file_exists($dir)){
             $fs->dumpFile( $dir . "/parameters.yml", $yaml );
+        }
+        else {
+            die(var_dump($this->dirtmp.' gibt es nicht'));
         }
     }
     public function createHTTPVariablesFile()
     {
         $fs = new \Symfony\Component\Filesystem\Filesystem();
-        
+
         $varfile= "";
         foreach( $this->parameters as $key => $var ){
             $varfile .= "SetEnv    SYMFONY__" . str_replace( "_", "__", $key ) . " \"$var\"\n";
         }
-        
+
         $file = "/etc/httpd/sites" . "/" . $this->name . ".variables.conf";
         $fs->dumpFile( $file, $varfile );
     }
@@ -214,7 +215,7 @@ class environment
         }
         $vhost->parameters = $this->parameters;
         $vhost->dir = $dir;
-        
+
         if (! file_exists($dir)) {
             mkdir($dir, 0777, true);
             chown($dir, CloudSDK::USER);
@@ -362,9 +363,7 @@ class environment
         }
         file_put_contents($this->dirtmp . "/variables.bash",$varfile);
         chmod( $this->dirtmp . "/variables.bash", 0755);
-
         chmod( $file, 0755);
-        $this->createYAMLParametersFile();
         $this->run($file, $this->parameters, $this->dirtmp);
         if (file_exists($file)) {
             unlink($file);
@@ -400,13 +399,12 @@ class environment
         $process->setIdleTimeout(3600);
         $process->setEnv($env);
         $process->run(function ($type, $buffer) {
-    if (Process::ERR === $type) {
-        echo $buffer;
-    } else {
-        echo $buffer;
-    }
-});
-        
+            if (Process::ERR === $type) {
+                echo $buffer;
+            } else {
+                echo $buffer;
+            }
+        });
         if (! $process->isSuccessful()) {
             $out = $process->getErrorOutput();
             throw new \RuntimeException($out);
