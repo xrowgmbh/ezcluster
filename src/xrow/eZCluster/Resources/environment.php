@@ -323,7 +323,7 @@ class environment
             $file = $this->dirtmp . "/build";
             if (strpos($this->parameters["SCM"], 'svn') !== false) {
                 if (! is_dir($this->dirtmp . "/.svn")) {
-                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $this->parameters["USER"]. " --password ". $this->parameters["PASSWORD"]. " " . $this->parameters["BRANCH"] . " " . $this->dirtmp);
+                    $this->run("svn co --force --quiet --trust-server-cert --non-interactive --username ". $this->parameters["SVN_USER"] . " --password ". $this->parameters["SVN_PASS"]. " " . $this->parameters["BRANCH"] . " " . $this->dirtmp);
                 }
             } elseif (strpos($this->parameters["SCM"], 'git') !== false) {
                 
