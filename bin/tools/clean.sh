@@ -1,7 +1,7 @@
 #!/bin/sh
 PWD=$(pwd)
 
-sh /usr/share/ezcluster/bin/tools/cache.sh
+. /usr/share/ezcluster/bin/tools/cache.sh
 rm -Rf ezpublish_legacy/var/log/*
 rm -Rf ezpublish/logs/*
 rm -Rf ezpublish_legacy/var/ezdemo_site/log/*
