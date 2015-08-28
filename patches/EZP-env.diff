@@ -1,0 +1,20 @@
+--- vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Composer/ScriptHandler.php.orig  2015-08-28 15:03:14.000176769 +0200
++++ vendor/sensio/distribution-bundle/Sensio/Bundle/DistributionBundle/Composer/ScriptHandler.php       2015-08-28 15:04:42.349677160 +0200
+@@ -214,7 +214,7 @@
+             $console .= ' --ansi';
+         }
+ 
+-        $process = new Process($php.' '.$console.' '.$cmd, null, null, null, $timeout);
++        $process = new Process($php.' '.$console.' '.$cmd, $_ENV, null, null, $timeout);
+         $process->run(function ($type, $buffer) { echo $buffer; });
+         if (!$process->isSuccessful()) {
+             throw new \RuntimeException(sprintf('An error occurred when executing the "%s" command.', escapeshellarg($cmd)));
+@@ -227,7 +227,7 @@
+         $cmd = escapeshellarg(__DIR__.'/../Resources/bin/build_bootstrap.php');
+         $appDir = escapeshellarg($appDir);
+ 
+-        $process = new Process($php.' '.$cmd.' '.$appDir, null, null, null, $timeout);
++        $process = new Process($php.' '.$cmd.' '.$appDir, $_ENV, null, null, $timeout);
+         $process->run(function ($type, $buffer) { echo $buffer; });
+         if (!$process->isSuccessful()) {
+             throw new \RuntimeException('An error occurred when generating the bootstrap file.');
