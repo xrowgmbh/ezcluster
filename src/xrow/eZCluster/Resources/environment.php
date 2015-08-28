@@ -172,7 +172,6 @@ class environment
     public function createYAMLParametersFile()
     {
         $fs = new \Symfony\Component\Filesystem\Filesystem();
-
         $parameter = array();
         foreach( $this->parameters as $key => $var ){
             $parameter[strtolower(str_replace( "_", ".", $key ))] = $var;
@@ -187,11 +186,12 @@ class environment
         {
             $dir = $this->dirtmp . "/app/config";
         }
+        else
+        {
+            $dir = $fs->mkdir($this->dirtmp . "/ezpublish/config", 0777);
+        }
         if (file_exists($dir)){
             $fs->dumpFile( $dir . "/parameters.yml", $yaml );
-        }
-        else {
-            die(var_dump($this->dirtmp.' gibt es nicht'));
         }
     }
     public function createHTTPVariablesFile()
@@ -364,6 +364,7 @@ class environment
         file_put_contents($this->dirtmp . "/variables.bash",$varfile);
         chmod( $this->dirtmp . "/variables.bash", 0755);
         chmod( $file, 0755);
+        $this->createYAMLParametersFile();
         $this->run($file, $this->parameters, $this->dirtmp);
         if (file_exists($file)) {
             unlink($file);
