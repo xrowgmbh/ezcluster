@@ -381,7 +381,12 @@ class environment
         chown($this->dirtmp, CloudSDK::USER);
         chgrp($this->dirtmp, CloudSDK::USER);
         ClusterTools::mkdir($this->docroottmp, CloudSDK::USER, 0777);
-        $fs->rename( $this->dir, $this->dir. ".new" );
+        try {
+            $fs->rename( $this->dir, $this->dir. ".new" );
+        }catch(\Exception $e){
+            $fs->remove( $this->dir . ".new" );
+            $fs->rename( $this->dir, $this->dir. ".new" );            
+        }
         $fs->rename( $this->dirtmp, $this->dir );
         $fs->remove( $this->dir . ".new" );
     }
