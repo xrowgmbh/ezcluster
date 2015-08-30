@@ -168,6 +168,10 @@ class environment
         $this->parameters["HOME"] = "/home/" . CloudSDK::USER;
         $this->parameters["LANG"] = "en_US.UTF-8";
         $this->parameters["COMPOSER_NO_INTERACTION"] = "1";
+        foreach ( $this->parameters as $key => $value ){
+            $this->parameters["SYMFONY__" . $key] = $value;
+            $this->parameters["SYMFONY__" . str_replace( "_", "__",$key )] = $value;            
+        }
     }
     public function createYAMLParametersFile()
     {
@@ -191,7 +195,7 @@ class environment
             $fs->dumpFile( $dir . "/parameters.yml", $yaml );
         }
         else {
-            die(var_dump($this->dirtmp.' gibt es nicht'));
+            throw new \Exception( $this->dirtmp. ' gibt es nicht' );
         }
     }
     public function createHTTPVariablesFile()
@@ -359,7 +363,6 @@ class environment
         $varfile= "";
         foreach( $this->parameters as $key => $var ){
             $varfile .= "export $key=\"$var\"\n";
-            $varfile .= "export SYMFONY__" . str_replace( "_", "__", $key ) . "=\"$var\"\n";
         }
         file_put_contents($this->dirtmp . "/variables.bash",$varfile);
         chmod( $this->dirtmp . "/variables.bash", 0755);
