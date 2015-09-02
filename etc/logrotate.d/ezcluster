@@ -3,7 +3,7 @@
         missingok
         rotate 10
         compress
-        create 640 ec2-user ec2-user
+        create 640 ec2-user apache
         delaycompress
         copytruncate
 }

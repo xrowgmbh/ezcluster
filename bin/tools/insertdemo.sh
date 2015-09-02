@@ -9,12 +9,12 @@ rm -Rf ezpublish_legacy/settings/override ezpublish_legacy/settings/siteaccess e
 
 if [ ! ${VERSION} ]; then
   wget --no-check-certificate -O dump.zip https://github.com/xrowgmbh/xrowvagrant-demodata/archive/master.zip
-  unzip -o -d $PWD dump.zip
+  unzip -n -o -d $PWD dump.zip
   cp -r xrowvagrant-demodata-master/* .
   rm -Rf xrowvagrant-demodata-master
 else
   wget --no-check-certificate -O dump.zip https://github.com/xrowgmbh/xrowvagrant-demodata/archive/${VERSION}.zip
-  unzip -o -d $PWD dump.zip
+  unzip -n -o -d $PWD dump.zip
   cp -r xrowvagrant-demodata-${VERSION}/* .
   rm -Rf xrowvagrant-demodata-${VERSION}
 fi
