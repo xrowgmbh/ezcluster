@@ -168,6 +168,12 @@ class environment
         $this->parameters["HOME"] = "/home/" . CloudSDK::USER;
         $this->parameters["LANG"] = "en_US.UTF-8";
         $this->parameters["COMPOSER_NO_INTERACTION"] = "1";
+        $this->parameters["SECRET"] = uniqid();
+        $this->parameters["MAILER_TRANSPORT"] = "smtp";
+        $this->parameters["MAILER_HOST"] = "127.0.0.1";
+        $this->parameters["MAILER_USER"] = null;
+        $this->parameters["MAILER_PASSWORD"] = null;
+        $this->parameters["LOCAL_FALLBACK"] = "en";
         foreach ( $this->parameters as $key => $value ){
             $this->parameters["SYMFONY__" . $key] = $value;
             $this->parameters["SYMFONY__" . str_replace( "_", "__",$key )] = $value;            
