@@ -226,7 +226,7 @@ class environment
         if (! file_exists($dir)) {
             mkdir($dir, 0777, true);
             chown($dir, CloudSDK::USER);
-            chgrp($dir, CloudSDK::USER);
+            chgrp($dir, CloudSDK::GROUP);
         }
         $vhost->name = $this->name;
         $vhost->hosts = array();
@@ -324,7 +324,7 @@ class environment
         $script = (string) $this->environment["script"];
         chmod($this->dirtmp, 0777);
         chown($this->dirtmp, CloudSDK::USER);
-        chgrp($this->dirtmp, CloudSDK::USER);
+        chgrp($this->dirtmp, CloudSDK::GROUP);
 
         //checkout & execute
         if (! empty($this->parameters["SCM"]) and empty($script) and empty( $bootstrap_script )) {
@@ -385,7 +385,7 @@ class environment
         }
         chmod($this->dirtmp, 0777);
         chown($this->dirtmp, CloudSDK::USER);
-        chgrp($this->dirtmp, CloudSDK::USER);
+        chgrp($this->dirtmp, CloudSDK::GROUP);
         ClusterTools::mkdir($this->docroottmp, CloudSDK::USER, 0777);
         try {
             $fs->rename( $this->dir, $this->dir. ".new" );

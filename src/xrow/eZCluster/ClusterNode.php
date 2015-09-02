@@ -568,7 +568,7 @@ class ClusterNode extends Resources\instance
 +auto.master\n");
         chmod("/etc/auto.master", 0755);
         chown("/etc/auto.master", CloudSDK::USER);
-        chgrp("/etc/auto.master", CloudSDK::USER);
+        chgrp("/etc/auto.master", CloudSDK::GROUP);
         $mounts = array();
         if (is_array($result)) {
             foreach ($result as $environment) {

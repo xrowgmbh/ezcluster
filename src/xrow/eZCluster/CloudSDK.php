@@ -10,6 +10,7 @@ class CloudSDK
 {
     const SITES_ROOT = '/var/www/sites';
     const USER = 'ec2-user';
+    const GROUP = 'apache';
     public static $ezcTemplateConfiguration;
     const CONFIG_FILE = '/etc/ezcluster/ezcluster.xml';
     const XML_NAMESPACE = 'http://www.xrow.com/schema/ezcluster';

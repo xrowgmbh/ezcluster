@@ -351,7 +351,7 @@ export KERN_DIR
         return false;
     }
 
-    static public function mkdir( $dir, $user = false, $permissions = 0775 )
+    static public function mkdir( $dir, $user = false, $permissions = 0775, $group = CloudSDK::GROUP )
     {
         if ( is_dir( $dir ) )
         {
@@ -362,7 +362,7 @@ export KERN_DIR
         if ( $user !== false )
         {
             chown( $dir, $user );
-            chgrp( $dir, $user );
+            chgrp( $dir, $group );
         }
         umask($old);
     }
