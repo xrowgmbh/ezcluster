@@ -191,11 +191,8 @@ class environment
         {
             $dir = $this->dirtmp . "/app/config";
         }
-        if (file_exists($dir)){
+        if ( isset( $dir ) && file_exists($dir)){
             $fs->dumpFile( $dir . "/parameters.yml", $yaml );
-        }
-        else {
-            throw new \Exception( $this->dirtmp. ' gibt es nicht' );
         }
     }
     public function createHTTPVariablesFile()
