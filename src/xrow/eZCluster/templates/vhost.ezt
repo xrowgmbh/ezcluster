@@ -67,6 +67,10 @@ SetEnv USE_HTTP_CACHE 0
 SetEnv TRUSTED_PROXIES "127.0.0.1"
 SetEnv USE_APC_CLASSLOADER 0
 
+<IfModule php5_module>
+  php_value newrelic.appname "{$vhost->name}"
+</IfModule>
+
 IncludeOptional /etc/httpd/sites/{$vhost->name}.*.conf
 
 CustomLog /dev/null common
