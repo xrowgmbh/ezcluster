@@ -233,6 +233,10 @@ class environment
         foreach ($this->environment->xpath('hostname') as $host) {
             $vhost->hosts[] = (string) $host;
         }
+        if( isset( $this->environment->protection ) ){
+           $vhost->protection["user"] = $this->environment->protection['user'];
+           $vhost->protection["password"] = $this->environment->protection['password'];
+        }
         return $vhost;
     }
     public function getStoragePath()

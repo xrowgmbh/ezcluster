@@ -71,6 +71,22 @@ SetEnv USE_APC_CLASSLOADER 0
   php_value newrelic.appname "{$vhost->name}"
 </IfModule>
 
+{if $vhost->protection }
+<Directory "{$vhost->dir}">
+ AuthName "Protected Area"
+ AuthType Basic
+ AuthBasicProvider anon
+
+ Anonymous_NoUserID off
+ Anonymous_MustGiveEmail on
+ Anonymous_VerifyEmail on
+ Anonymous_LogEmail on
+ Anonymous anonymous guest test {$vhost->protection["user"]}
+    
+ Require valid-user
+</Directory>
+{/if}
+
 IncludeOptional /etc/httpd/sites/{$vhost->name}.*.conf
 
 CustomLog /dev/null common
