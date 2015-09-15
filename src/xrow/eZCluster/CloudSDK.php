@@ -60,12 +60,6 @@ class CloudSDK
         {
             throw new \Exception( "You need to be root to execute the command." );
         }
-        if (! checkdnsrr("amazonaws.com")) {
-            system("/etc/init.d/network restart");
-            if (! checkdnsrr("amazonaws.com")) {
-                throw new \Exception("amazonaws.com is not reachable via network");
-            }
-        }
         self::$ezcTemplateConfiguration = new \ezcTemplateConfiguration(dirname(__FILE__) . DIRECTORY_SEPARATOR . "templates", sys_get_temp_dir() . "/.compilation", new \ezcTemplateNoContext());
         self::$ezcTemplateConfiguration->checkModifiedTemplates = false;
         self::$ezcTemplateConfiguration->disableCache = true;
