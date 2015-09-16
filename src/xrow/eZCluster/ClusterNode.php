@@ -859,40 +859,6 @@ class ClusterNode extends Resources\instance
             system('/etc/init.d/ezfind-solr start');
         }
         
-        if (in_array('database', $services)) {
-            $t = new ezcTemplate();
-            $t->configuration = CloudSDK::$ezcTemplateConfiguration;
-            if (! is_dir( self::MYSQL_DIR ) ) {
-                die("NOO".self::MYSQL_DIR);
-                mkdir( self::MYSQL_DIR, 0755);
-                chown( self::MYSQL_DIR, 'mysql');
-                chgrp( self::MYSQL_DIR, 'mysql');
-                system("/usr/bin/sudo /usr/bin/mysql_install_db --datadir=".self::MYSQL_DIR."--basedir=/usr --user=mysql --defaults-file=/etc/my.cnf");
-                $pass = substr(rtrim(file_get_contents("/root/.mysql_secret")), - 8);
-                echo "MySql password: $pass\n";
-                unlink("/root/.mysql_secret");
-                system("/usr/bin/sudo /usr/bin/mysql -e\"GRANT ALL PRIVILEGES ON *.* TO 'ec2-user'@'localhost' WITH GRANT OPTION\"");
-            }
-            $t->send->datadir = self::MYSQL_DIR;
-
-            $t->send->settings = db::getDatabaseSettings(false);
-            file_put_contents('/etc/my.cnf.d/ezcluster.cnf', $t->process('my.ezt'));
-
-            // Ram Disk
-            if ( self::getRAMDiskSize()) {
-                if (! is_dir('/var/mysql.tmp')) {
-                    mkdir('/var/mysql.tmp', 0755);
-                    chown('/var/mysql.tmp', 'mysql');
-                    chgrp('/var/mysql.tmp', 'mysql');
-                    system("mount -t tmpfs -o size=" . (int) self::getRAMDiskSize() . "M,mode=0775,noatime,nodiratime tmpfs /var/mysql.tmp");
-                }
-            }
-            system('systemctl start mariadb');
-
-            if (isset($pass)) {
-                system("mysql -e\"SET PASSWORD FOR 'root'@'localhost' = PASSWORD('');\" -u root -p$pass");
-            }
-        }
         $this->setupDatabase();
         
         if ($this->getStorageHost()) {
@@ -1153,9 +1119,6 @@ EOD;
                 file_put_contents(self::PHP_OPCACHE_INI, $opcache);
             }
             system('systemctl start httpd');
-            system('systemctl start varnish');
-            usleep(1000000);
-            system('systemctl start varnishncsa');
             if (! in_array('dev', $services) and $this->isLoadBalancerMember()) {
                 try {
                     $lb = new lb($this->getLB());
@@ -1192,8 +1155,6 @@ EOD;
                 $lb = new lb($this->getLB());
                 $lb->deregister($this);
             }
-            system('systemctl stop varnishncsa');
-            system('systemctl stop varnish');
             system('systemctl stop httpd');
         }
         system('systemctl stop autofs');
@@ -1203,9 +1164,6 @@ EOD;
             if (file_exists(self::SOLR_CONFIG_FILE)) {
                 unlink(self::SOLR_CONFIG_FILE);
             }
-        }
-        if (in_array('database', $services)) {
-            system('systemctl stop mariadb');
         }
         if (in_array('storage', $services) or in_array('storage-slave', $services)) {
             // will kill myself
