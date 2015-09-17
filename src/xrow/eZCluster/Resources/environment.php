@@ -96,7 +96,7 @@ class environment
                 else {
                     $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " " . $this->parameters["BRANCH"] );
                 }
-                list( $git_rev, $branch ) = preg_split("/[\s,]+/", $git_rev, 2 );
+                list( $git_rev, $this->parameters["BRANCH"] ) = preg_split("/[\s,]+/", $git_rev, 2 );
                 $this->parameters["REVISION"] = $git_rev;
             }
         }
