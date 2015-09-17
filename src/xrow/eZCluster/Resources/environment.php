@@ -237,6 +237,10 @@ class environment
            $vhost->protection["user"] = $this->environment->protection['user'];
            $vhost->protection["password"] = $this->environment->protection['password'];
         }
+        else
+        {
+           $vhost->protection = null;
+        }
         return $vhost;
     }
     public function getStoragePath()
