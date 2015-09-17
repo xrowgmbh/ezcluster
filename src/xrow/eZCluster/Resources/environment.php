@@ -140,6 +140,8 @@ class environment
         $this->parameters["DATABASE_NAME"] = $dbdetails["database"];
         $this->parameters["DATABASE_SERVER"] = $dbdetails["hostspec"];
         $this->parameters["DATABASE_USER"] = $dbdetails["username"];
+        $this->parameters["DATABASE_DRIVER"] = "pdo_mysql";
+        $this->parameters["DATABASE_PORT"] = "3306";
         $this->parameters["DATABASE_PASSWORD"] = $dbdetails["password"];
         $this->parameters["AWS_KEY"] = (string) CloudSDK::$config['access_key'];
         $this->parameters["AWS_SECRETKEY"] = (string) CloudSDK::$config['secret_key'];
@@ -173,7 +175,7 @@ class environment
         $this->parameters["MAILER_HOST"] = "127.0.0.1";
         $this->parameters["MAILER_USER"] = null;
         $this->parameters["MAILER_PASSWORD"] = null;
-        $this->parameters["LOCALE_FALLBACK"] = "en";
+        $this->parameters["LOCALE"] = "en";
         foreach ( $this->parameters as $key => $value ){
             $this->parameters["SYMFONY__" . $key] = $value;
             $this->parameters["SYMFONY__" . str_replace( "_", "__",$key )] = $value;            
