@@ -95,13 +95,12 @@ class environment
                     $this->parameters["BRANCH"] = $this->environment['branch'];
                 }
                 if ( $this->parameters["BRANCH"] ){
-                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD");
-                }
-                else {
                     $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " " . $this->parameters["BRANCH"] );
                 }
-                list( $git_rev, $this->parameters["BRANCH"] ) = preg_split("/[\s,]+/", $git_rev, 2 );
-                $this->parameters["REVISION"] = $git_rev;
+                else {
+                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD");
+                }
+                list( $this->parameters["REVISION"] ) = preg_split("/[\s,]+/", $git_rev, 1 );
             }
         }
         
@@ -340,6 +339,7 @@ class environment
         chown($this->dirtmp, CloudSDK::USER);
         chgrp($this->dirtmp, CloudSDK::GROUP);
 
+
         //checkout & execute
         if (! empty($this->parameters["SCM"]) and empty($script) and empty( $bootstrap_script )) {
             $file = $this->dirtmp . "/build";
@@ -349,7 +349,7 @@ class environment
                 }
             } elseif (strpos($this->parameters["SCM"], 'git') !== false) {
                 
-                $this->run("/usr/bin/git " . join(" ", array(
+                $this->run( "/usr/bin/git " . join(" ", array(
                     "clone",
                     $this->parameters["SCM"],
                     "--branch",
@@ -432,7 +432,7 @@ class environment
         });
         if (! $process->isSuccessful()) {
             $out = $process->getErrorOutput();
-            throw new \RuntimeException($out);
+            throw new \RuntimeException( "Command '$command' failed with '" . $out . "'" );
         }
         
         $user = posix_getpwnam("root");
