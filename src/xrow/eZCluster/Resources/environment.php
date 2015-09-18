@@ -53,6 +53,10 @@ class environment
         }
         if (!isset($this->parameters["SYMFONY_ENV"])){
             $this->parameters["SYMFONY_ENV"] = "prod";
+            $this->parameters["ENVIRONMENT"] = "prod";
+        }
+        else{
+            $this->parameters["ENVIRONMENT"] = $this->parameters["SYMFONY_ENV"];
         }
         if (! empty($this->parameters["SCM"])) {
             if (strpos($this->parameters["SCM"], 'svn') !== false) {
@@ -136,7 +140,7 @@ class environment
              * if ($this->getDatabaseSlave()) { $slavedb = ezcDbFactory::parseDSN($this->getDatabaseSlave()); $fields = array( "username", "password", "hostspec" ); foreach ($fields as $field) { if ($slavedb[$field]) { $dbdetails[$field] = $slavedb[$field]; } } }
             */
         }
-        $this->parameters["ENVIRONMENT"] = $this->name;
+        $this->parameters["ENVIRONMENT_NAME"] = $this->name;
         $this->parameters["DATABASE_NAME"] = $dbdetails["database"];
         $this->parameters["DATABASE_SERVER"] = $dbdetails["hostspec"];
         $this->parameters["DATABASE_USER"] = $dbdetails["username"];
