@@ -301,19 +301,6 @@ quit
                         $vol->detach();
                     }
                     break;
-                case 'build':
-                    echo "Starting Build Server\n";
-                    $region = $args[1];
-                    if ($region) {
-                        xrowClusterTools::createImage($region);
-                    } else {
-                        xrowClusterTools::createImage(AmazonEC2::REGION_US_E1);
-                        xrowClusterTools::createImage(AmazonEC2::REGION_EU_W1);
-                    }
-                    break;
-                case 'cloudformation':
-                    xrowClusterTools::cloudFormation();
-                    break;
                 case 'schemasave':
                     $service = new xroweZClusterService();
                     $service->save();
