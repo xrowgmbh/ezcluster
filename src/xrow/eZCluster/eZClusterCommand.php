@@ -247,7 +247,7 @@ quit
                         $environment->setup();
                         ClusterNode::getInstance()->setupCrons();
                     } else {
-                        foreach (enviorment::getList() as $environment) {
+                        foreach (Resources\environment::getList() as $environment) {
                             $environment->clean();
                             $environment->setup();
                             ClusterNode::getInstance()->setupCrons();
