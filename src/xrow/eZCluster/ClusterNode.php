@@ -246,7 +246,7 @@ class ClusterNode extends Resources\instance
             $excludesRsync .= ' --exclude=' . escapeshellarg($exclude) . ' ';
         }
         if ($storagepath and $sourcestoragepath and $copydata) {
-            $command = 'rsync -avztr --no-super --no-owner --no-group --delete-excluded ';
+            $command = 'rsync -avztr --no-p --no-t --no-super --no-o --no-g --delete-excluded ';
             if ( !isset( $connection['pass'] ) ){
                 $command .= '--rsh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 22" ';
             }else{
