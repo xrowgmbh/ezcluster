@@ -242,7 +242,7 @@ quit
                     break;
                 case 'bootstrap':
                     
-                    if ($args[1]) {
+                    if (isset($args[1])) {
                         $environment = new Resources\environment($args[1]);
                         $environment->setup();
                         ClusterNode::getInstance()->setupCrons();
