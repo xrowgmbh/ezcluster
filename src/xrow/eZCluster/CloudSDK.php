@@ -231,7 +231,20 @@ class CloudSDK
                 $result = self::$config->xpath( "/aws/sshkey[@name = 'deploy']" );
                 foreach ( $result as $node )
                 {
-                    $file="/home/" . self::USER . "/.ssh/id_rsa";
+                    $config = "/home/" . self::USER . "/.ssh/config";
+                    if ( $node['host'] )
+                    {
+                        $host = (string)$node['host'];
+                        $file="/home/" . self::USER . "/.ssh/id_rsa_" . $host;
+                        file_put_contents($config, "Host " . $host . "\n    IdentityFile " . $file . "\n", FILE_APPEND | LOCK_EX);
+                    }
+                    else
+                    {
+                        $host = false;
+                        $file="/home/" . self::USER . "/.ssh/id_rsa";
+                    }
+
+
                     file_put_contents( $file, trim((string)$node) );
                     chmod( $file, 0600 );
                     chown( $file, self::USER );
