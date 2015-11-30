@@ -165,16 +165,6 @@ class CloudSDK
                 {
                 	system("sudo yum install -y " . (string) $node);
                 }
-                $result = self::$config->xpath( "/aws/sshkey[@name = 'APIKEY']" );
-                foreach ( $result as $node )
-                {
-                    file_put_contents( "/etc/ezcluster/aws.pem", (string)$node );
-                }
-                $result = self::$config->xpath( "/aws/sshkey[@name = 'APICERT']" );
-                foreach ( $result as $node )
-                {
-                    file_put_contents( "/etc/ezcluster/aws.cert", (string)$node );
-                }
             }
         }
         if ( file_exists( self::CONFIG_FILE ) )
@@ -226,7 +216,28 @@ class CloudSDK
             }
         
         }
-        
+            if ( self::$config )
+            {
+                $result = self::$config->xpath( "/aws/sshkey[@name = 'APIKEY']" );
+                foreach ( $result as $node )
+                {
+                    file_put_contents( "/etc/ezcluster/aws.pem", (string)$node );
+                }
+                $result = self::$config->xpath( "/aws/sshkey[@name = 'APICERT']" );
+                foreach ( $result as $node )
+                {
+                    file_put_contents( "/etc/ezcluster/aws.cert", (string)$node );
+                }
+                $result = self::$config->xpath( "/aws/sshkey[@name = 'deploy']" );
+                foreach ( $result as $node )
+                {
+                    $file="/home/" . self::USER . "/.ssh/id_rsa";
+                    file_put_contents( $file, trim((string)$node) );
+                    chmod( $file, 0600 );
+                    chown( $file, self::USER );
+                    chgrp( $file, self::GROUP );
+                }
+            }        
         self::factory();
     }
     static public function factoryAWS2( $name = 'SesClient', $namespace = "Aws\\Ses" )
