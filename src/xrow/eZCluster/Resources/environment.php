@@ -100,7 +100,7 @@ class environment
                 else {
                     $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD");
                 }
-                list( $this->parameters["REVISION"] ) = preg_split("/[\s,]+/", $git_rev, 1 );
+                list( $this->parameters["REVISION"] ) = preg_split("/[\s,]+/", $git_rev, -1 );
             }
         }
         
