@@ -201,7 +201,7 @@ quit
                     // $img->launch( "Test " . $img->id );
                     break;
                 case 'init':
-                    xrowAWSSDK::init(true);
+                    CloudSDK::init(true);
                     
                     break;
                 case 'permission':

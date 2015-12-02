@@ -39,7 +39,7 @@ class CloudSDK
     }
     static function basedir()
     {
-        return realpath( dirname( __FILE__ ) . "/../" );
+        return realpath( dirname( __FILE__ ) . "/../../../" );
     }
 
     static function setRegion( $region )
@@ -115,7 +115,7 @@ class CloudSDK
                 fclose( $handle );
                 try
                 {
-                    xrowClusterTools::validateXML( $tmpfname );
+                    ClusterTools::validateXML( $tmpfname );
                     unlink( $tmpfname );
                 }
                 catch ( \Exception $e )
@@ -124,7 +124,7 @@ class CloudSDK
                     echo $e->getMessage();
                 }
                 
-                $file = xrowAWSSDK::CONFIG_FILE;
+                $file = CloudSDK::CONFIG_FILE;
                 
                 $data = mb_convert_encoding( $data, 'UTF-8' );
                 libxml_use_internal_errors( true );

@@ -35,7 +35,7 @@ class ClusterTools
         }
         else
         {
-            throw new Exception( "No SSH Key is provided in config" );
+            throw new \Exception( "No SSH Key is provided in config" );
         }
         $node = new ClusterNode();
         $xp = "/aws/cluster[ @lb = '" . $node->getLB() . "' ]/instance";
@@ -55,7 +55,7 @@ class ClusterTools
             {
                 if (!$instance->checkInstance( ))
                 {
-                    throw new Exception( "Instance #" . $instance->id . "isn't online.");
+                    throw new \Exception( "Instance #" . $instance->id . "isn't online.");
                 }
             }
             foreach ( $instances as $instance )
@@ -83,7 +83,7 @@ class ClusterTools
         $ip = $instance->ip();
         if ( fsockopen( $instance->ip(), 22 ) === false )
         {
-            throw new Exception( "No connect to $ip." );
+            throw new \Exception( "No connect to $ip." );
         }
         echo "Connect to " . $instance->id . "  " . $instance->ip() . "\n";
         $connection = ssh2_connect( $instance->ip(), 22, array( 
@@ -92,12 +92,12 @@ class ClusterTools
 
         if ( ! is_resource( $connection ) )
         {
-            throw new Exception( "No ssh-rsa connect to $ip." );
+            throw new \Exception( "No ssh-rsa connect to $ip." );
         }
         
         if ( $methods = ssh2_methods_negotiated( $connection ) and isset( $methods['hostkey'] ) and $methods['hostkey'] != 'ssh-rsa' )
         {
-            throw new Exception( "No connect to $ip." );
+            throw new \Exception( "No connect to $ip." );
         }
         /** might work later on centos 7 or zend server php 5.4 with ssh agent
         if ( ssh2_auth_agent( $connection, 'ec2-user' ) )
@@ -112,7 +112,7 @@ class ClusterTools
 
         if ( !ssh2_auth_pubkey_file( $connection, 'ec2-user', self::TMP_PUBLIC_KEY, self::TMP_PRIVATE_KEY ) )
         {
-            throw new Exception( "Authentification failed." );
+            throw new \Exception( "Authentification failed." );
         }
         $tmpfname = tempnam( sys_get_temp_dir(), 'BUILDTMP' );
         $lb = new lb( $instance->getLB() );
@@ -141,7 +141,7 @@ EOF;
         }
         if ( !ssh2_scp_send( $connection, $tmpfname, '/home/ec2-user/deploy.sh', 0644 ) )
         {
-            throw new Exception( "Can`t copy deploy.sh." );   
+            throw new \Exception( "Can`t copy deploy.sh." );   
         }
         unlink( $tmpfname );
         $stream = ssh2_exec( $connection, 'nohup sh --login /home/ec2-user/deploy.sh > /home/ec2-user/deploy.out 2> /home/ec2-user/deploy.err < /dev/null &' );
@@ -207,7 +207,7 @@ EOF;
     {
         if ( empty( $emailaddress ) )
         {
-            throw new Exception( "Please provide an email address." );
+            throw new \Exception( "Please provide an email address." );
         }
         $email = CloudSDK::factoryAWS2( 'SesClient' );
         
@@ -219,7 +219,7 @@ EOF;
         ) );
         if ( ! $response->isOK() )
         {
-            throw new Exception(  (string) $response->body->Errors->Error->Message );
+            throw new \Exception(  (string) $response->body->Errors->Error->Message );
         }
         return true; 
     }
@@ -230,12 +230,12 @@ EOF;
         libxml_use_internal_errors( true );
         libxml_disable_entity_loader( false );
         
-        $xml = new DOMDocument();
+        $xml = new \DOMDocument();
         $xml->load( $file );
         
         if ( ! $xml->schemaValidate( CloudSDK::basedir() . $schema ) )
         {
-            throw new Exception( self::libxml_display_errors() );
+            throw new \Exception( self::libxml_display_errors() );
         }
         return true;
     }
@@ -332,7 +332,7 @@ EOF;
         
         if ( empty( $dsns ) )
         {
-            throw new Exception( "There is no database connection defined." );
+            throw new \Exception( "There is no database connection defined." );
         }
         xrowClusterTools::mkdir( "/mnt/nas/.backup" );
         
@@ -373,7 +373,7 @@ EOF;
         $response = $rds->describe_db_instances();
         if ( ! $response->isOK() )
         {
-            throw new xrowAWSException( $response );
+            throw new \Exception( $response );
         }
         
         foreach ( $response->body->DescribeDBInstancesResult->DBInstances->DBInstance as $db )
@@ -392,7 +392,7 @@ EOF;
             
             if ( ! $response->isOK() )
             {
-                throw new xrowAWSException( $response );
+                throw new \Exception( $response );
             }
         }
         
