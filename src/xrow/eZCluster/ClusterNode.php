@@ -836,8 +836,29 @@ class ClusterNode extends Resources\instance
                 $list = Resources\environment::getList();
                 foreach ( $list as $env )
                 {
+                    $params = $env->parameters;
+                    if( isset($params["ADDITIONAL_SOLR_CORES"]) AND trim($params["ADDITIONAL_SOLR_CORES"]) != "" )
+                    {
+                        $env_cores = $params["ADDITIONAL_SOLR_CORES"];
+                        //check if there are more cores (seperated by spaces)   
+                        if ( strpos($env_cores, " ") === false)
+                        {
+                            $cores[] = $env_cores;
+                        }
+                        else
+                        {
+                            $env_cores = explode( " ", $env_cores );
+                            foreach ( $env_cores as $core )
+                            {
+                                $cores[] = $core;
+                            }
+                        }
+                    }
                     $cores[] = $env->name;
                 }
+                //unique the array, otherwise SOLR can crash
+                $cores = array_unique($cores);
+
                 $sorconf = "CORES=\"".join(" ",$cores)."\"\n";
                 $sorconf .= "PARAMETERS=\"-Denable.master=true -Denable.slave=false\"\n";
             } else {
