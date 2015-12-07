@@ -838,7 +838,7 @@ class ClusterNode extends Resources\instance
                 {
                     $params = $env->parameters;
 
-                    $additional_cores = $env->environment->xpath('additional_solr_cores');
+                    $additional_cores = $env->environment->xpath('core');
                     if ( count($additional_cores) >= 1 )
                     {
                         foreach ( $additional_cores as $core )
