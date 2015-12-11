@@ -237,7 +237,7 @@ class CloudSDK
                     {
                         $host = (string)$node['host'];
                         $file="/home/" . self::USER . "/.ssh/id_rsa_" . $host;
-                        file_put_contents($config, "Host " . $host . "\n    IdentityFile " . $file . "\n", FILE_APPEND | LOCK_EX);
+                        file_put_contents($config, "Host " . $host . "\n    StrictHostKeyChecking no\n    UserKnownHostsFile /dev/null\n    IdentityFile " . $file . "\n", FILE_APPEND | LOCK_EX);
                     }
                     else
                     {
