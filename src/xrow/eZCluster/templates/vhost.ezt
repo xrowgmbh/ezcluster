@@ -33,7 +33,6 @@ RewriteRule ^(/kibana-int/dashboard/|/kibana-int/temp).*$ http://localhost:9200/
 
 </VirtualHost>
 
-NameVirtualHost *:8080
 
 {use $vhosts}
 

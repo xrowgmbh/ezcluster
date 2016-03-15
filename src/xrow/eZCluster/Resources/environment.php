@@ -310,13 +310,6 @@ class environment
             $fs->remove( $this->dir . ".new" );
         }
 
-        $t = new ezcTemplate();
-        $t->configuration = CloudSDK::$ezcTemplateConfiguration;
-        $t->send->access_key = (string) CloudSDK::$config['access_key'];
-        $t->send->secret_key = (string) CloudSDK::$config['secret_key'];
-
-        file_put_contents("/home/ec2-user/.s3cfg", $t->process('s3cfg.ezt'));
-
         if (! file_exists($this->dir)) {
             ClusterTools::mkdir($this->dir, CloudSDK::USER, 0777);
         }
