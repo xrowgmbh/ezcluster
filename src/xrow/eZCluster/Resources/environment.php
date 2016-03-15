@@ -156,8 +156,8 @@ class environment
         } else {
             $solr = "http://" . $solr_master . ":8983/solr/" . $this->name;
         }
-        $this->parameters["search_engine"] = "legacy";
-        $this->parameters["solr_dsn"] = $solr;
+        $this->parameters["SEARCH_ENGINE"] = "legacy";
+        $this->parameters["SOLR_DSN"] = $solr;
         if ( isset( $dfsdetails ) )
         {
             $this->parameters["DFS_TYPE"] = $dfsdetails["type"];
@@ -182,8 +182,8 @@ class environment
         $this->parameters["MAILER_USER"] = null;
         $this->parameters["MAILER_PASSWORD"] = null;
         $this->parameters["LOCALE"] = "en";
-        $this->parameters["locale_fallback"] = $this->parameters["LOCALE"];
-        $this->parameters["secret"] = md5( print_r( $this->parameters, true ) );
+        $this->parameters["LOCALE_FALLBACK"] = $this->parameters["LOCALE"];
+        $this->parameters["SECRET"] = md5( print_r( $this->parameters, true ) );
         foreach ( $this->parameters as $key => $value ){
             $this->parameters["SYMFONY__" . $key] = $value;
             $this->parameters["SYMFONY__" . str_replace( "_", "__",$key )] = $value;            
