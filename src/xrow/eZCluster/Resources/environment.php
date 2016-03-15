@@ -142,6 +142,7 @@ class environment
         $this->parameters["ENVIRONMENT_NAME"] = $this->name;
         $this->parameters["DATABASE_NAME"] = $dbdetails["database"];
         $this->parameters["DATABASE_SERVER"] = $dbdetails["hostspec"];
+        $this->parameters["DATABASE_HOST"] = $dbdetails["hostspec"];
         $this->parameters["DATABASE_USER"] = $dbdetails["username"];
         $this->parameters["DATABASE_DRIVER"] = "pdo_mysql";
         $this->parameters["DATABASE_PORT"] = "3306";
@@ -155,12 +156,14 @@ class environment
         } else {
             $solr = "http://" . $solr_master . ":8983/solr/" . $this->name;
         }
-        $this->parameters["SOLR_URL"] = $solr;
+        $this->parameters["search_engine"] = "legacy";
+        $this->parameters["solr_dsn"] = $solr;
         if ( isset( $dfsdetails ) )
         {
             $this->parameters["DFS_TYPE"] = $dfsdetails["type"];
             $this->parameters["DFS_DATABASE_NAME"] = $dfsdetails["database"];
             $this->parameters["DFS_DATABASE_SERVER"] = $dfsdetails["hostspec"];
+            $this->parameters["DFS_DATABASE_HOST"] = $dfsdetails["hostspec"];
             $this->parameters["DFS_DATABASE_USER"] = $dfsdetails["username"];
             $this->parameters["DFS_DATABASE_PASSWORD"] = $dfsdetails["password"];
             $this->parameters["DFS_MOUNT"] = $dfsdetails["mount"];
@@ -179,6 +182,8 @@ class environment
         $this->parameters["MAILER_USER"] = null;
         $this->parameters["MAILER_PASSWORD"] = null;
         $this->parameters["LOCALE"] = "en";
+        $this->parameters["locale_fallback"] = $this->parameters["LOCALE"];
+        $this->parameters["secret"] = md5( print_r( $this->parameters, true ) );
         foreach ( $this->parameters as $key => $value ){
             $this->parameters["SYMFONY__" . $key] = $value;
             $this->parameters["SYMFONY__" . str_replace( "_", "__",$key )] = $value;            
@@ -423,6 +428,7 @@ class environment
         $process->setTimeout(3600);
         $process->setIdleTimeout(3600);
         $process->setEnv($env);
+        $process->setPty(true); // https://github.com/composer/composer/issues/5044
         $process->run(function ($type, $buffer) {
             if (Process::ERR === $type) {
                 echo $buffer;
