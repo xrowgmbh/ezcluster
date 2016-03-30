@@ -51,6 +51,21 @@ AcceptPathInfo On
   AllowOverride All
 </Directory>
 
+ProxyRequests Off
+ProxyVia Off
+ProxyAddHeaders On
+
+ProxyPass "/osm-tiles/" http://a.tile.openstreetmap.org:80/
+ProxyPassReverse  "/osm-tiles/" "http://a.tile.openstreetmap.org:80/"
+
+<LocationMatch "/osm-tiles/">
+<IfModule mod_headers.c>
+Header set Cache-Control "max-age=2592000, public"
+</IfModule>
+</LocationMatch>
+
+
+
 {if $vhost->parameters["SYMFONY_ENV"]}
 
 SetEnv SYMFONY_ENV {$vhost->parameters["SYMFONY_ENV"]}
