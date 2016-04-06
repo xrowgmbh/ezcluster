@@ -140,13 +140,15 @@ class environment
             */
         }
         $this->parameters["ENVIRONMENT_NAME"] = $this->name;
-        $this->parameters["DATABASE_NAME"] = $dbdetails["database"];
-        $this->parameters["DATABASE_SERVER"] = $dbdetails["hostspec"];
-        $this->parameters["DATABASE_HOST"] = $dbdetails["hostspec"];
-        $this->parameters["DATABASE_USER"] = $dbdetails["username"];
-        $this->parameters["DATABASE_DRIVER"] = "pdo_mysql";
-        $this->parameters["DATABASE_PORT"] = "3306";
-        $this->parameters["DATABASE_PASSWORD"] = $dbdetails["password"];
+        if( isset( $dbdetails ) ){
+            $this->parameters["DATABASE_NAME"] = $dbdetails["database"];
+            $this->parameters["DATABASE_SERVER"] = $dbdetails["hostspec"];
+            $this->parameters["DATABASE_HOST"] = $dbdetails["hostspec"];
+            $this->parameters["DATABASE_USER"] = $dbdetails["username"];
+            $this->parameters["DATABASE_DRIVER"] = "pdo_mysql";
+            $this->parameters["DATABASE_PORT"] = "3306";
+            $this->parameters["DATABASE_PASSWORD"] = $dbdetails["password"];
+        }
         $this->parameters["AWS_KEY"] = (string) CloudSDK::$config['access_key'];
         $this->parameters["AWS_SECRETKEY"] = (string) CloudSDK::$config['secret_key'];
         $this->parameters["AWS_ACCOUNTID"] = (string) CloudSDK::$config['account_id'];
@@ -381,9 +383,10 @@ class environment
         }
         file_put_contents($this->dirtmp . "/variables.bash",$varfile);
         chmod( $this->dirtmp . "/variables.bash", 0755);
-        chmod( $file, 0755);
-        $this->run($file, $this->parameters, $this->dirtmp);
+        
         if (file_exists($file)) {
+            chmod( $file, 0755);
+            $this->run($file, $this->parameters, $this->dirtmp);
             unlink($file);
         }
         $this->createYAMLParametersFile();
