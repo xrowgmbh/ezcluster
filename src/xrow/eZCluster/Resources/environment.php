@@ -423,7 +423,11 @@ class environment
         }
         $process->setTimeout(3600);
         $process->setIdleTimeout(3600);
-        $process->setEnv($env);
+        if ( !empty($env) )
+        {
+            $env['PATH']="/opt/rh/php55/root/usr/bin:/opt/rh/php55/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin";
+            $process->setEnv($env);
+        }
         $process->setPty(true); // https://github.com/composer/composer/issues/5044
         $process->run(function ($type, $buffer) {
             if (Process::ERR === $type) {
