@@ -31,7 +31,7 @@ class ClusterNode extends Resources\instance
 
     const PHP_DEBUGGER_INI = '/etc/php.d/debugger.ini';
 
-    const PHP_OPCACHE_INI = '/etc/php.d/opcache.ini';
+    const PHP_OPCACHE_INI = '/opt/rh/php55/root/etc/php.d/opcache.ini';
 
     const EXPORTS_FILE = '/etc/exports';
 
