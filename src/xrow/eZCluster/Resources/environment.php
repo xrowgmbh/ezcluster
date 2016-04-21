@@ -9,6 +9,7 @@ use \ezcTemplateNoContext;
 use \ezcTemplate;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Filesystem\Filesystem;
 use \stdClass;
 
 class environment
@@ -415,6 +416,14 @@ class environment
     function run($command, $env = array(), $wd = null)
     {
         $user = posix_getpwnam(CloudSDK::USER);
+        $fs = new Filesystem();
+        if ( $fs->exists( '/vagrant/id_rsa' ) ){
+            $idfile = '/home/'. CloudSDK::USER . "/.ssh/id_rsa";
+            $fs->copy('/vagrant/id_rsa', $idfile );
+            $fs->chown( $idfile, CloudSDK::USER);
+            $fs->chgrp( $idfile, CloudSDK::GROUP);
+            $fs->chmod( $idfile, 0600);
+        }
         posix_setgid($user['gid']);
         posix_setuid($user['uid']);
         $process = new Process($command);
