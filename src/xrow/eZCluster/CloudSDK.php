@@ -11,6 +11,7 @@ class CloudSDK
     const SITES_ROOT = '/var/www/sites';
     const USER = 'ec2-user';
     const GROUP = 'apache';
+    const PATH = "/opt/rh/php55/root/usr/bin:/opt/rh/php55/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
     public static $ezcTemplateConfiguration;
     const CONFIG_FILE = '/etc/ezcluster/ezcluster.xml';
     const XML_NAMESPACE = 'http://www.xrow.com/schema/ezcluster';

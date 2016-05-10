@@ -175,7 +175,7 @@ class environment
             if (isset($dfsdetails['bucket']))
                 $this->parameters["BUCKET"] = $dfsdetails["bucket"];
         }
-        $this->parameters["PATH"] = "/sbin:/bin:/usr/sbin:/usr/bin";
+        $this->parameters["PATH"] = CloudSDK::PATH;
         $this->parameters["HOME"] = "/home/" . CloudSDK::USER;
         $this->parameters["LANG"] = "en_US.UTF-8";
         $this->parameters["COMPOSER_NO_INTERACTION"] = "1";
@@ -434,7 +434,7 @@ class environment
         $process->setIdleTimeout(3600);
         if ( !empty($env) )
         {
-            $env['PATH']="/opt/rh/php55/root/usr/bin:/opt/rh/php55/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin";
+            $env['PATH'] = CloudSDK::PATH;
             $process->setEnv($env);
         }
         $process->setPty(true); // https://github.com/composer/composer/issues/5044
