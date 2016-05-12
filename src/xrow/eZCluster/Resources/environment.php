@@ -155,12 +155,13 @@ class environment
         $this->parameters["AWS_ACCOUNTID"] = (string) CloudSDK::$config['account_id'];
         $solr_master = ClusterNode::getSolrMasterHost();
         if (instance::current()->ip() == $solr_master or empty($solr_master)) {
-            $solr = "http://localhost:8983/solr/" . $this->name;
+            $solr = "http://localhost:8983/solr/#";
         } else {
-            $solr = "http://" . $solr_master . ":8983/solr/" . $this->name;
+            $solr = "http://" . $solr_master . ":8983/solr/#";
         }
         $this->parameters["SEARCH_ENGINE"] = "legacy";
         $this->parameters["SOLR_DSN"] = $solr;
+        $this->parameters["SOLR_CORE"] = $this->name;
         if ( isset( $dfsdetails ) )
         {
             $this->parameters["DFS_TYPE"] = $dfsdetails["type"];
