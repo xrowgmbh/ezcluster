@@ -1,13 +1,17 @@
 [Unit]
 Description=eZ Platform Application Server
 After=syslog.target network-online.target
+Before=httpd.service
+BindsTo=httpd.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+EnvironmentFile=/etc/environment
 WorkingDirectory=/usr/share/ezcluster
-ExecStart=/usr/bin/ezcluster start
-ExecStop=/usr/bin/ezcluster stop
+ExecStart=/usr/share/ezcluster/bin/ezcluster ezcluster start
+ExecStop=/usr/share/ezcluster/bin/ezcluster ezcluster stop
 
 [Install]
 WantedBy=multi-user.target
+RequiredBy=httpd.service

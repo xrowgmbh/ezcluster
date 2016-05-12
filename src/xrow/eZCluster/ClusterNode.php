@@ -866,7 +866,6 @@ class ClusterNode extends Resources\instance
             }
             
             file_put_contents(self::SOLR_CONFIG_FILE, $sorconf);
-            system('/etc/init.d/ezfind-solr start');
         }
         
         $this->setupDatabase();
@@ -887,7 +886,6 @@ class ClusterNode extends Resources\instance
         $this->setupCrons();
         if (in_array('web', $services)) {
             $this->setupHTTP();
-            system('systemctl start httpd');
             if (! in_array('dev', $services) and $this->isLoadBalancerMember()) {
                 try {
                     $lb = new lb($this->getLB());
@@ -924,36 +922,14 @@ class ClusterNode extends Resources\instance
                 $lb = new lb($this->getLB());
                 $lb->deregister($this);
             }
-            system('systemctl stop httpd');
         }
         system('systemctl stop autofs');
-        if (in_array('solr', $services) or in_array('solr-slave', $services)) {
-            
-            system('/etc/init.d/ezfind-solr stop');
-            if (file_exists(self::SOLR_CONFIG_FILE)) {
-                unlink(self::SOLR_CONFIG_FILE);
-            }
-        }
         if (in_array('storage', $services) or in_array('storage-slave', $services)) {
             // will kill myself
             // ystem( 'killall php' );
             system('systemctl stop nfs');
             system('systemctl stop nfslock');
             system('systemctl stop drbd');
-        /**
-         * try
-         * {
-         * $vol = new volume( $this->getStorageVolumeID() );
-         * echo "Detaching volume $vol.\n";
-         * if ( $vol->get( 'status' ) == 'in-use' )
-         * {
-         * $vol->detach();
-         * }
-         * }
-         * catch ( \ Exception $e )
-         * {
-         * }
-         */
         }
     }
 }
