@@ -166,6 +166,7 @@ class db extends Abstracts\xrowEC2Resource
         }
         
         $dbdetails = ezcDbFactory::parseDSN($dsn);
+        $dbdetails['database'] = str_replace( ".", "_", $dbdetails['database']);
         if ( !isset( $GLOBALS["database"]["users"][$dbdetails['username']] ) ){
             $GLOBALS["database"]["users"][$dbdetails['username']] = $dbdetails['password'];
         }
@@ -212,6 +213,7 @@ class db extends Abstracts\xrowEC2Resource
     public static function translateDSN($dsn)
     {
         $dbdetails = ezcDbFactory::parseDSN($dsn);
+        $dbdetails['database'] = str_replace( ".", "_", $dbdetails['database']);
         if ($dbdetails['hostspec'] === 'localhost') {
             return $dbdetails;
         }
