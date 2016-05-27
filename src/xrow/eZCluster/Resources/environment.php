@@ -431,7 +431,7 @@ class environment
         if ($wd) {
             $process->setWorkingDirectory($wd);
         }
-        $process->setTimeout(3600);
+        $process->setTimeout(24*3600);
         $process->setIdleTimeout(3600);
         if ( !empty($env) )
         {
