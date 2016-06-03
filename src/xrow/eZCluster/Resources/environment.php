@@ -432,7 +432,7 @@ class environment
             $process->setWorkingDirectory($wd);
         }
         $process->setTimeout(24*3600);
-        $process->setIdleTimeout(3600);
+        $process->setIdleTimeout(24*3600);
         if ( !empty($env) )
         {
             $env['PATH'] = CloudSDK::PATH;
