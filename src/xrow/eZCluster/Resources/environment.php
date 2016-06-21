@@ -412,6 +412,10 @@ class environment
         }
         $fs->rename( $this->dirtmp, $this->dir );
         $fs->remove( $this->dir . ".new" );
+        # @TODO chmod 777 everything before delete
+        # 
+        # [centos@test ~]$ ls -lisa /var/www/sites/wuv.de.new/.git/objects/48/
+        #  74374385 4 -r--r--r--   1 ec2-user apache  538 Jun 13 16:25 edd813dff3f9df1ba4fcd151126e0584d64c6a
     }
 
     function run($command, $env = array(), $wd = null)
