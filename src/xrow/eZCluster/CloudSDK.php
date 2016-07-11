@@ -11,7 +11,6 @@ class CloudSDK
     const SITES_ROOT = '/var/www/sites';
     const USER = 'ec2-user';
     const GROUP = 'apache';
-    const PATH = "/opt/rh/php55/root/usr/bin:/opt/rh/php55/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin";
     public static $ezcTemplateConfiguration;
     const CONFIG_FILE = '/etc/ezcluster/ezcluster.xml';
     const XML_NAMESPACE = 'http://www.xrow.com/schema/ezcluster';
@@ -29,6 +28,19 @@ class CloudSDK
         "APAC_SE1" => 'aki-6dd5aa3f' , 
         "APAC_NE1" => '??' 
     );
+    static function path()
+    {
+        if ( file_exists("/opt/rh/rh-php56/root/usr/bin/php") )
+        {
+            return "/opt/rh/rh-php56/root/usr/bin:/opt/rh/rh-php56/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
+        }
+        elseif ( file_exists("/opt/rh/php55/root/usr/bin") ){
+            return "/opt/rh/php55/root/usr/bin:/opt/rh/php55/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin";
+        }
+        else{
+            return "/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin";
+        }
+    }
     // in format "ec2." . $avail_zone . "amazonaws.com"
     static function kernel( $region )
     {
