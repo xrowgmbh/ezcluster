@@ -176,7 +176,7 @@ class environment
             if (isset($dfsdetails['bucket']))
                 $this->parameters["BUCKET"] = $dfsdetails["bucket"];
         }
-        $this->parameters["PATH"] = CloudSDK::PATH;
+        $this->parameters["PATH"] = CloudSDK::path();
         $this->parameters["HOME"] = "/home/" . CloudSDK::USER;
         $this->parameters["LANG"] = "en_US.UTF-8";
         $this->parameters["COMPOSER_NO_INTERACTION"] = "1";
