@@ -359,6 +359,12 @@ class environment
                     "--single-branch",
                     $this->dirtmp
                 )), $this->parameters, $this->dirtmp);
+                $this->run( "/usr/bin/git " . join(" ", array(
+                    "submodule",
+                    "update",
+                    "--init"
+                )), $this->parameters, $this->dirtmp);
+
             }
         }
         if (! empty($script) and empty($bootstrap_script)) {
