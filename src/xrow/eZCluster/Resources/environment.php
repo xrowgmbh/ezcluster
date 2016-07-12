@@ -445,7 +445,7 @@ class environment
         $process->setIdleTimeout(24*3600);
         if ( !empty($env) )
         {
-            $env['PATH'] = CloudSDK::PATH;
+            $env['PATH'] = CloudSDK::path();
             $process->setEnv($env);
         }
         $process->setPty(true); // https://github.com/composer/composer/issues/5044
