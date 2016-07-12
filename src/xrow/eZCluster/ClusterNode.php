@@ -634,7 +634,7 @@ class ClusterNode extends Resources\instance
         }
         if (isset($crondata)) {
             echo "Setup crontab " . self::CRONTAB_FILE . " for " . CloudSDK::USER . "\n";
-            $vars = "PATH=" . CloudSDK::PATH . "\n\n";
+            $vars = "PATH=" . CloudSDK::path() . "\n\n";
             file_put_contents(self::CRONTAB_FILE, $vars . $crondata);
             $cmd = "crontab -u " . CloudSDK::USER . " " . self::CRONTAB_FILE;
             system($cmd);
