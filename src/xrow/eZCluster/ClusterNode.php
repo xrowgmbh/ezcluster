@@ -42,7 +42,11 @@ class ClusterNode extends Resources\instance
     const STORAGE_TYPE_MULTI_MASTER = 2;
 
     const STORAGE_TYPE_MASTER_SLAVE = 3;
+
     const MYSQL_DIR = "/var/lib/mysql";
+
+    const LOG_DIR = "/var/log/ezcluster";
+
     #const MYSQL_DIR = "/mnt/storage/mysql";
     
     const SOLR_MASTER_DIR = "/mnt/storage/ezfind";
@@ -594,44 +598,34 @@ class ClusterNode extends Resources\instance
         if (! self::$config) {
             return false;
         }
-        $crondata = "";
+
         $crondata = "1 * * * * rm -Rf /var/www/sites/*/ezpublish/cache/dev/profiler/\n";
-        
+
         $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'admin' and @name='" . $this->name() . "']";
-        
-        $result = self::$config->xpath($xp);
+        $instance = self::$config->xpath($xp);
+
         $pathprefix = "/var/log/ezcluster";
-        ClusterTools::mkdir( $pathprefix, "root", 0777);
-        if (is_array($result) and count($result) > 0) {
+        ClusterTools::mkdir( self::LOG_DIR, "root", 0777);
+
+        if (is_array($instance) and count($instance) > 0) {
             $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment[cron]";
-            $result = self::$config->xpath($xp);
-            foreach ($result as $env) {
+            $environments = self::$config->xpath($xp);
+            $environmentCrondata = "";
+
+            foreach ($environments as $env) {
                 $path = CloudSDK::SITES_ROOT . '/' . (string) $env['name'];
-                $log = $pathprefix . '/' . (string) $env['name'] . ".cron.log";
-                foreach ($env->xpath('cron') as $cron) {
-                    if ((string) $cron['timing'] and (string) $cron['group']) {
-                        $memory_limit = (isset($cron['memory_limit'])) ? (string) $cron['memory_limit'] : self::CRON_DEFAULT_MEMORY_LIMIT;
-                        $crondata .= (string) $cron['timing'] . " cd $path && php -d memory_limit=$memory_limit ezpublish/console ezpublish:legacy:script runcronjobs.php " . (string) $cron['group'] . " >> $log 2>&1\n";
-                    }
-                    if ((string) $cron['timing'] and (string) $cron['cmd']) {
-                        $crondata .= (string) $cron['timing'] . " cd $path && " . (string) $cron['cmd'] . " >> $log 2>&1\n";
-                    }
-                }
+                $crons = $env->xpath('cron');
+                $environmentCrondata .= self::setupCronData($crons, $path);
             }
+            $crondata .= $environmentCrondata;
         }
-        $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']/cron";
-        
-        $result = self::$config->xpath($xp);
-        
-        if (is_array($result) and count($result) > 0) {
-            foreach ($result as $cron) {
-                if ((string) $cron['timing'] and (string) $cron['cmd']) {
-                    $crondata .= (string) $cron['timing'] . " cd " . self::SITES_ROOT . " && " . (string) $cron['cmd'] . "\n";
-                    // User ec2-user has Permissions to the log /var/log/ezcluster/cron.log, so the crons will not run.
-                    // . " >> /var/log/ezcluster/cron.log 2>&1\n";
-                }
-            }
+
+        if (is_array($instance) and count($instance) > 0) {
+            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']/cron";
+            $crons = self::$config->xpath($xp);
+            $crondata .= self::setupCronData($crons);
         }
+
         if (isset($crondata)) {
             echo "Setup crontab " . self::CRONTAB_FILE . " for " . CloudSDK::USER . "\n";
             $vars = "PATH=" . CloudSDK::path() . "\n\n";
@@ -640,6 +634,49 @@ class ClusterNode extends Resources\instance
             system($cmd);
             unlink(self::CRONTAB_FILE);
         }
+    }
+    private function setupCronData($crons, $path = false)
+    {
+        $crondata = "";
+        foreach ($crons as $cron) {
+            if ((string) $cron['timing'])
+            {
+                $log = self::getLogfileName($cron);
+
+                if ((string) $cron['group'] and $path !== false) {
+                    $memory_limit = (isset($cron['memory_limit'])) ? (string) $cron['memory_limit'] : self::CRON_DEFAULT_MEMORY_LIMIT;
+                    $crondata .= (string) $cron['timing'] . " cd $path && php -d memory_limit=$memory_limit ezpublish/console ezpublish:legacy:script runcronjobs.php " . (string) $cron['group'] . " >> $log 2>&1\n";
+                }
+                elseif ((string) $cron['cmd'] and $path !== false) {
+                    $crondata .= (string) $cron['timing'] . " cd $path && " . (string) $cron['cmd'] . " >> $log 2>&1\n";
+                }
+                elseif ((string) $cron['cmd']) {
+                    $crondata .= (string) $cron['timing'] . " cd " . CloudSDK::SITES_ROOT . " && " . (string) $cron['cmd'] . " >> $log 2>&1\n";
+                }
+            }
+            else
+            {
+                throw new \Exception("At least one cron is missing an timing attribute!");
+            }
+        }
+        return $crondata;
+    }
+    
+    private function getLogfileName($cron)
+    {
+        if((string) $cron['name'])
+        {
+            $log = self::LOG_DIR . '/' . (string) $cron['name'] . ".cron.log";
+        }
+        elseif ((string) $cron['group'])
+        {
+            $log = self::LOG_DIR . '/' . $cron['group'] . ".cron.log";
+        }
+        elseif ((string) $cron['cmd'])
+        {
+            $log = self::LOG_DIR . '/' . crc32($cron['cmd']) . ".cron.log";
+        }
+        return $log;
     }
 
     public function startServices()
