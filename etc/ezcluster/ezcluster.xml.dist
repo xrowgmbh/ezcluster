@@ -42,22 +42,28 @@ wget --no-check-certificate https://raw.githubusercontent.com/xrowgmbh/xrowvagra
 source ./54.sh
 ]]></script>
             </bootstrap>
-            <database dsn="mysql://xrow:password@localhost/ezpublish"/>
-            <storage dsn="mysql://xrow:password@localhost/ezpublish" mount="/mnt/nas/live"/>
+            <database dsn="mysql://admin:centos@localhost/ezpublish"/>
+            <storage dsn="mysql://admin:centos@localhost/ezpublish" mount="/mnt/nas/live"/>
             <hostname>stable.*</hostname>
             <hostname>localhost</hostname>
         </environment>
-        <environment name="ezplatform" 
+        <environment name="ezplatform-demo" 
                      docroot="web"
                      script="https://raw.githubusercontent.com/xrowgmbh/xrowvagrant-demodata/ezplatform/build">
-            <database dsn="mysql://xrow:password@localhost/ezplatform"/>
-            <storage dsn="mysql://xrow:password@localhost/ezplatform" mount="/mnt/nas/ezplatform"/>
+            <database dsn="mysql://admin:centos@localhost/ezplatform"/>
+            <storage dsn="mysql://admin:centos@localhost/ezplatform" mount="/mnt/nas/ezplatform"/>
             <hostname>ezplatform.*</hostname>
         </environment>
         <environment name="plain" scm="https://github.com/xrowgmbh/xrowvagrant-demodata.git" branch="plain">
-            <database dsn="mysql://xrow:password@localhost/plain"/>
-            <storage dsn="mysql://xrow:password@localhost/plain" mount="/mnt/nas/live"/>
+            <database dsn="mysql://admin:centos@localhost/plain"/>
+            <storage dsn="mysql://admin:centos@localhost/plain" mount="/mnt/nas/live"/>
             <hostname>plain.*</hostname>
+        </environment>
+        <environment name="sylius-demo"
+                     docroot="web"
+                     scm="https://github.com/xrowgmbh/sylius-demo.git">
+            <database dsn="mysql://admin:centos@localhost/sylius"/>
+            <hostname>sylius.*</hostname>
         </environment>
     </cluster>
 </aws>
