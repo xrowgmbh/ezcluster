@@ -119,7 +119,7 @@ class CloudSDK
                 }
             }
             
-            if ( $data != "" )
+            if ( isset($data) && $data != "" )
             {
                 $tmpfname = tempnam( sys_get_temp_dir(), "test_" );
                 
