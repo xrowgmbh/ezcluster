@@ -394,6 +394,9 @@ class environment
         
         if (file_exists($file)) {
             chmod( $file, 0755);
+            if(strpos(file_get_contents($file), "\r\n") !== false) {
+                throw new \RuntimeException( "Build file '$file' has windows linefeeds" );
+            }
             $this->run($file, $this->parameters, $this->dirtmp);
             unlink($file);
         }
