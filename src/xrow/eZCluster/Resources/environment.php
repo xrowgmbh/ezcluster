@@ -159,9 +159,15 @@ class environment
         } else {
             $solr = "http://" . $solr_master . ":8983/solr/#";
         }
-        $this->parameters["SEARCH_ENGINE"] = "solr";
-        $this->parameters["SOLR_DSN"] = $solr;
-        $this->parameters["SOLR_CORE"] = $this->name;
+        if (!isset( $this->parameters["SEARCH_ENGINE"] )){
+            $this->parameters["SEARCH_ENGINE"] = "solr";
+        }
+        if (!isset( $this->parameters["SEARCH_ENGINE"] )){
+            $this->parameters["SOLR_DSN"] = $solr;
+        }
+        if (!isset( $this->parameters["SEARCH_ENGINE"] )){
+            $this->parameters["SOLR_CORE"] = $this->name;
+        }
         if ( isset( $dfsdetails ) )
         {
             $this->parameters["DFS_TYPE"] = $dfsdetails["type"];
