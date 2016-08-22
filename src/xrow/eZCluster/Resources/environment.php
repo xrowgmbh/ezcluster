@@ -162,10 +162,10 @@ class environment
         if (!isset( $this->parameters["SEARCH_ENGINE"] )){
             $this->parameters["SEARCH_ENGINE"] = "solr";
         }
-        if (!isset( $this->parameters["SEARCH_ENGINE"] )){
+        if (!isset( $this->parameters["SOLR_DSN"] )){
             $this->parameters["SOLR_DSN"] = $solr;
         }
-        if (!isset( $this->parameters["SEARCH_ENGINE"] )){
+        if (!isset( $this->parameters["SOLR_CORE"] )){
             $this->parameters["SOLR_CORE"] = $this->name;
         }
         if ( isset( $dfsdetails ) )
