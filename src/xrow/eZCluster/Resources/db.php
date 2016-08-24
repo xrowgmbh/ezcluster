@@ -100,13 +100,14 @@ class db extends Abstracts\xrowEC2Resource
         if (! $session) {
             $source = self::translateDSN($dsnsource);
             $target = self::translateDSN($dsntarget);
+            $dumpname = "/var/tmp/dump." . $source['database'] .".sql.gz";
             $dump = "mysqldump --compress --default-character-set=utf8 --opt --single-transaction --add-drop-table --add-drop-database -h " . $source['hostspec'] . " -u " . $source['username'];
             if (! empty($source['password'])) {
                 $dump .= " -p'" . $source['password'];
             }
-            $dump .= "' --databases " . $source['database'] . " | gzip > /var/tmp/dump.sql.gz";
+            $dump .= "' --databases " . $source['database'] . " | gzip > " . $dumpname;
             system($dump);
-            $insert = "gunzip < /var/tmp/dump.sql.gz | mysql --compress -h" . $target['hostspec'] . " -u " . $target['username'];
+            $insert = "gunzip < " . $dumpname . " | mysql --compress -h" . $target['hostspec'] . " -u " . $target['username'];
             if (! empty($target['password'])) {
                 $insert .= " -p'" . $target['password'] . "'";
             }
@@ -115,11 +116,11 @@ class db extends Abstracts\xrowEC2Resource
                 $dump .= " --where=\"$where\"";
             }
             system($insert);
-            unlink("/var/tmp/dump.sql.gz");
+            unlink( $dumpname );
         } else {
             $exec = $session->getExec();
             $source = db::translateDSN($dsnsource);
-            
+            $dumpname = "/var/tmp/dump." . $source['database'] .".sql.gz";
             $dump = "mysqldump --compress --default-character-set=utf8 --opt --single-transaction --add-drop-table --add-drop-database -h " . $source['hostspec'];
             if (!empty($source['username'])) {
                 $dump .= " -u " . $source['username'];
@@ -131,14 +132,14 @@ class db extends Abstracts\xrowEC2Resource
             {
                 $dump .= " --where=\"$where\"";
             }
-            $dump .= " --databases " . $source['database'] . " | gzip > /var/tmp/dump.sql.gz";
+            $dump .= " --databases " . $source['database'] . " | gzip > " . $dumpname;
             $exec->run($dump);
             $sftp = $session->getSftp();
-            $sftp->receive("/var/tmp/dump.sql.gz", "/var/tmp/dump.sql.gz");
-            $sftp->unlink("/var/tmp/dump.sql.gz");
+            $sftp->receive( $dumpname, $dumpname);
+            $sftp->unlink( $dumpname );
             $target = db::translateDSN($dsntarget);
             
-            $insert = "gunzip < /var/tmp/dump.sql.gz | mysql --compress -h" . $target['hostspec'];
+            $insert = "gunzip < ".$dumpname." | mysql --compress -h" . $target['hostspec'];
             if (!empty($target['username'])) {
                 $insert .= " -u " . $target['username'];
             }if (!empty($target['password'])) {
@@ -146,7 +147,7 @@ class db extends Abstracts\xrowEC2Resource
             }
             echo "$insert";
             system($insert);
-            unlink("/var/tmp/dump.sql.gz");
+            unlink( $dumpname );
         }
     }
 
