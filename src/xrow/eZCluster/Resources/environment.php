@@ -339,7 +339,11 @@ class environment
             ClusterTools::mkdir($dfsdetails['mount'], CloudSDK::USER, 0777);
         }
         if (CloudSDK::$config['github-token']) {
-            file_put_contents("/home/" . CloudSDK::USER . "/.composer/config.json", '{ "config": { "github-oauth": { "github.com": "' . (string) CloudSDK::$config['github-token'] . '" } } }');
+            $composer_file = "/home/" . CloudSDK::USER . "/.composer/config.json";
+            file_put_contents( $composer_file, '{ "config": { "github-oauth": { "github.com": "' . (string) CloudSDK::$config['github-token'] . '" } } }');  
+            chmod( $composer_file, 0600);
+            chown( $composer_file, CloudSDK::USER);
+            chgrp( $composer_file, CloudSDK::GROUP);
         }
 
         $script = (string) $this->environment["script"];
