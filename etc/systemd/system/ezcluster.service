@@ -1,8 +1,6 @@
 [Unit]
 Description=eZ Platform Application Server
 After=syslog.target network-online.target
-Before=httpd.service
-BindsTo=httpd.service
 
 [Service]
 Type=oneshot
