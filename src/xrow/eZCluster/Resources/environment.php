@@ -55,10 +55,13 @@ class environment
         if (!isset($this->parameters["SYMFONY_ENV"])){
             $this->parameters["SYMFONY_ENV"] = "prod";
             $this->parameters["ENVIRONMENT"] = "prod";
+            
         }
         else{
             $this->parameters["ENVIRONMENT"] = $this->parameters["SYMFONY_ENV"];
         }
+        $this->parameters["USE_DEBUGGING"] = "0";
+
         if (! empty($this->parameters["SCM"])) {
             if (strpos($this->parameters["SCM"], 'svn') !== false) {
                 if (strpos($this->parameters["SCM"], "/", strlen($this->parameters["SCM"]) ) === false )
