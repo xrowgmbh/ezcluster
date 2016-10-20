@@ -60,7 +60,12 @@ class environment
         else{
             $this->parameters["ENVIRONMENT"] = $this->parameters["SYMFONY_ENV"];
         }
-        $this->parameters["USE_DEBUGGING"] = "0";
+        if ($this->parameters["SYMFONY_ENV"] === "dev" ){
+            $this->parameters["USE_DEBUGGING"] = "1";
+        }
+        else {
+            $this->parameters["USE_DEBUGGING"] = "0";
+        }
 
         if (! empty($this->parameters["SCM"])) {
             if (strpos($this->parameters["SCM"], 'svn') !== false) {
