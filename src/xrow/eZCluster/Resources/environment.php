@@ -383,6 +383,14 @@ class environment
                     "--init"
                 )), $this->parameters, $this->dirtmp);
 
+            } elseif (strpos($this->parameters["SCM"], 'file') !== false) {
+                $path = str_replace ( "file://" , "" , $this->parameters["SCM"] );
+                $this->run( "/usr/bin/cp " . join(" ", array(
+                    "-R",
+                    $path,
+                    $this->dirtmp
+                )), $this->parameters, $this->dirtmp);
+
             }
         }
         if (! empty($script) and empty($bootstrap_script)) {
