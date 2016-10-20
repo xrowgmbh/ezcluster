@@ -23,8 +23,6 @@ class ClusterNode extends Resources\instance
 
     const CLUSTER_CONFIG_FILE = '/etc/cluster/cluster.conf';
 
-    const DRBD_CONFIG_FILE = '/etc/drbd.conf';
-
     const CRONTAB_FILE = '/tmp/crontab.ec2-user';
 
     const HTTP_CONFIG_FILE = '/etc/httpd/sites/environment.conf';
@@ -35,19 +33,9 @@ class ClusterNode extends Resources\instance
 
     const PLACEMENT_GROUP = 'ezcluster';
 
-    const STORAGE_TYPE_NONE = 0;
-
-    const STORAGE_TYPE_SINGLE_MASTER = 1;
-
-    const STORAGE_TYPE_MULTI_MASTER = 2;
-
-    const STORAGE_TYPE_MASTER_SLAVE = 3;
-
     const MYSQL_DIR = "/var/lib/mysql";
 
     const LOG_DIR = "/var/log/ezcluster";
-
-    #const MYSQL_DIR = "/mnt/storage/mysql";
     
     const SOLR_MASTER_DIR = "/mnt/storage/ezfind";
 
@@ -75,19 +63,6 @@ class ClusterNode extends Resources\instance
             $str = str_replace("xmlns=", "ns=", $str);
             self::$config = new \SimpleXMLElement($str);
         }
-    }
-
-    public function checkConfig()
-    {
-        // @TODO Check if config has only one solr master
-    }
-
-    public function configCDN()
-    {
-        // @TODO send update to all cluster nodes
-        /*
-         * <DistributionConfig xmlns="http://cloudfront.amazonaws.com/doc/2010-11-01/"> <CustomOrigin> <DNSName><-- Origin DNS name --></DNSName> <HTTPPort>80</HTTPPort> <OriginProtocolPolicy>http-only</OriginProtocolPolicy> </CustomOrigin> <CallerReference>0123012310230123</CallerReference> <CNAME><-- the CNAME of the CloudFront hosted site --></CNAME> <Comment></Comment> <Enabled>true</Enabled> <DefaultRootObject>index.php</DefaultRootObject> </DistributionConfig>
-         */
     }
 
     public function csr()
@@ -263,62 +238,6 @@ class ClusterNode extends Resources\instance
         }
     }
 
-
-
-    public function getServices($roles)
-    {
-        $services = $roles;
-        if (in_array('storage', $roles)) {
-            array_push($services, 'solr');
-        }
-        
-        if (in_array('dev', $roles)) {
-            array_push($services, 'web', 'solr', 'database');
-        }
-        if (in_array('solr-slave', $services) and in_array('solr', $services)) {
-            $key = array_search('solr-slave', $services);
-            unset($services[$key]);
-            
-            // hrow new Exception( "Can`t use role 'solr-slave', if solr master is present" );
-        }
-        return array_unique($services);
-    }
-
-    public function roles()
-    {
-        $roles = array();
-        if (self::$config) {
-            $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']/role");
-            if (is_array($result)) {
-                foreach ($result as $key => $role) {
-                    $roles[$key] = strtolower(trim((string) $role));
-                }
-                return $roles;
-            }
-        }
-        $response = CloudSDK::factory()->describe_tags(array(
-            'Filter' => array(
-                array(
-                    'Name' => 'resource-id',
-                    'Value' => $this->id
-                ),
-                array(
-                    'Name' => 'key',
-                    'Value' => 'ROLES'
-                )
-            )
-        ));
-        if (! $response->isOK()) {
-            throw new eZCluster\Exceptions\xrowAWSException($response);
-        }
-        $roles = (string) $response->body->tagSet->item->value;
-        $roles = explode(',', $roles);
-        foreach ($roles as $key => $role) {
-            $roles[$key] = strtolower(trim($role));
-        }
-        return $roles;
-    }
-
     public function getCertificates()
     {
         $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/certificate");
@@ -437,30 +356,6 @@ class ClusterNode extends Resources\instance
         }
     }
 
-    public function getStorageHost()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[role = 'storage']");
-        if (isset($result)) {
-            $instances = array();
-            foreach ($result as $node) {
-                $instance = instance::byName((string) $node['name']);
-                if ($instance instanceof instance and $instance->describe()->instanceState->name == 'running') {
-                    $instances[] = $instance;
-                }
-            }
-            
-            foreach ($instances as $instance) {
-                if ((string) $this->describe()->placement->availabilityZone == (string) $instance->describe()->placement->availabilityZone) {
-                    return (string) $instance->describe()->privateIpAddress;
-                }
-            }
-            if (isset($instances[0])) {
-                return (string) $instances[0]->describe()->privateIpAddress;
-            }
-            return false;
-        }
-    }
-
     public function getDatabaseSlave()
     {
         $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']");
@@ -471,16 +366,6 @@ class ClusterNode extends Resources\instance
     {
         $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']");
         return (string) $result[0]['bind'];
-    }
-
-    public function getActivePeriods()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']");
-        if (isset($result[0]['active'])) {
-            return (string) $result[0]['active'];
-        } else {
-            return null;
-        }
     }
 
     public function isLoadBalancerMember()
@@ -681,11 +566,6 @@ class ClusterNode extends Resources\instance
 
     public function startServices()
     {
-        $roles = $this->roles();
-        echo "Assigned Roles " . join($roles, ',') . "\n";
-        $services = self::getServices($roles);
-        echo "Starting " . join($services, ',') . "\n";
-        
         $this->init();
         $this->setupMounts();
         $dir = "/mnt/storage";
@@ -694,280 +574,15 @@ class ClusterNode extends Resources\instance
             chown($dir, "root");
             chgrp($dir, "root");
         }
-        if (in_array('storage', $services) or in_array('storage-slave', $services)) {
-            if (! $this->getStorageSize()) {
-                $ok = true;
-            } else {
-                if ($this->getStorageVolumeID()) {
-                    $vol = new volume($this->getStorageVolumeID());
-                } else {
-                    $vol = volume::create($this->getStorageSize(), $this->name());
-                }
-                $info = $vol->get('attachmentSet');
-                if ($vol->get('status') == 'available') {
-                    $vol->attach('/dev/xvdl');
-                } elseif ($vol->get('status') == 'in-use' and $info['instanceId'] != $this->id) {
-                    $test = new instance($info['instanceId']);
-                    if ((string) $test->describe()->instanceState->name != 'running') {
-                        $vol->detach();
-                        $vol->attach('/dev/xvdl');
-                    } else {
-                        throw new \Exception("Can`t mount teast");
-                    }
-                } elseif ($vol->get('status') == 'in-use' and $info['instanceId'] == $this->id) {
-                    // do nothing
-                } else {
-                    throw new \Exception("Can`t mount. Volume not in a ready state");
-                }
-                
-                $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'storage' or role = 'storage-slave']");
-                
-                if (isset($result)) {
-                    
-                    $t = new ezcTemplate();
-                    $t->configuration = CloudSDK::$ezcTemplateConfiguration;
-                    $response = CloudSDK::factory()->describe_instances();
-                    
-                    foreach ($response->body->reservationSet->item as $set) {
-                        if ((string) $set->instancesSet->item->instanceState->name == 'running') {
-                            $instances[] = new ClusterNode((string) $set->instancesSet->item->instanceId);
-                        }
-                    }
-                    $i = 1;
-                    foreach ($instances as $key => $instance) {
-                        if (in_array('storage', $instance->roles()) or in_array('storage-slave', $instance->roles())) {
-                            $backend = new stdClass();
-                            $backend->name = $instance->getTag('Name');
-                            $dns = (string) $instance->describe()->privateDnsName;
-                            $backend->ip = (string) $instance->describe()->privateIpAddress;
-                            $list = explode(".", $dns);
-                            $backend->host = $list[0];
-                            $backend->fqdn = $dns;
-                            $backends[$i] = $backend;
-                            $i ++;
-                        }
-                    }
-                }
-                $ok = true;
-                $dev = system('blkid /dev/xvdl', $return);
-                
-                if (strpos($type, 'TYPE="ext4"') === false and count($backends) == 1 and self::getStorageTYpe() == self::STORAGE_TYPE_MULTI_MASTER) {
-                    echo "Will not start till I see one more node. Need the private IP. Can`t guess.\n";
-                    echo "Try restart later.\n";
-                }
-                
-                if (self::getStorageType() == self::STORAGE_TYPE_MULTI_MASTER and (count($backends) == 2 or $dev = "/dev/xvdl: block special (8/80)")) {
-                    echo "Entering Multi Master Setup\n";
-                    $t->send->backends = $backends;
-                    $t->send->multimaster = true;
-                    $t->send->master = true;
-                    $t->send->slave = false;
-                    // Process the template and print it.
-                    if (! is_dir(dirname(self::CLUSTER_CONFIG_FILE))) {
-                        mkdir(dirname(self::CLUSTER_CONFIG_FILE), 0755, true);
-                    }
-                    file_put_contents(self::CLUSTER_CONFIG_FILE, $t->process('cluster.ezt'));
-                    
-                    file_put_contents(self::DRBD_CONFIG_FILE, $t->process('drbd.ezt'));
-                    system("/sbin/drbdmeta 1 v08 /dev/xvdl internal check-resize", $return);
-                    if ($return == 255) {
-                        echo "drbdmeta return 255\n";
-                        system("drbdadm create-md storage");
-                        $createdMeta = true;
-                        
-                        // @TODO figure out a a way to define primary
-                        // drbdadm -- --overwrite-data-of-peer primary storage
-                    }
-                    
-                    system('systemctl start drbd', $return);
-                    
-                    // @TODO http://www.drbd.org/users-guide/s-gfs-create.html
-                    // system( 'mount -t gfs2 -o defaults,noexec,noatime,noauto /dev/drbd/by-res/storage /mnt/storage', $return );
-                    if ($return == 32 && isset($createdMeta) and $createdMeta == true) {
-                        // system( "drbdadm -- --overwrite-data-of-peer primary storage" );
-                        // system( 'mkfs -t gfs2 -p lock_dlm -t ezcluster:storage -j 2 /dev/drbd/by-res/storage' );
-                        // system( 'mount -t gfs2 -o defaults,noexec,noatime,noauto /dev/drbd/by-res/storage /mnt/storage', $return );
-                        if ($return != 0) {
-                            throw new \Exception("Can`t mount");
-                        }
-                    }
-                    system("chmod 777 /mnt/storage");
-                    system('cat /proc/drbd');
-                }
-                if (self::getStorageType() == self::STORAGE_TYPE_MASTER_SLAVE and (count($backends) == 2 or $dev = "/dev/xvdl: block special (8/80)")) {
-                    echo "Entering Master Slave Setup\n";
-                    $t->send->backends = $backends;
-                    if (in_array('storage', $services)) {
-                        $t->send->master = true;
-                        $t->send->slave = false;
-                        $t->send->multimaster = false;
-                    } elseif (in_array('storage-slave', $services)) {
-                        $t->send->master = false;
-                        $t->send->slave = true;
-                        $t->send->multimaster = false;
-                    }
-                    
-                    file_put_contents(self::DRBD_CONFIG_FILE, $t->process('drbd.ezt'));
-                    system("/sbin/drbdmeta 1 v08 /dev/xvdl internal check-resize", $return);
-                    if ($return == 255) {
-                        echo "drbdmeta return 255\n";
-                        system("drbdadm create-md storage");
-                        $createdMeta = true;
-                    }
-                    
-                    system('systemctl start drbd', $return);
-                    system('mount -t ext4 -o defaults,noexec,noatime,noauto /dev/drbd/by-res/storage /mnt/storage', $return);
-                    if ($return == 32 && isset($createdMeta) and $createdMeta == true) {
-                        system('echo "y" | mkfs -t ext4 /dev/drbd/by-res/storage');
-                        system('mount -t ext4 -o defaults,noexec,noatime,noauto /dev/drbd/by-res/storage /mnt/storage', $return);
-                        if ($return != 0) {
-                            throw new \Exception("Can`t mount");
-                        }
-                    }
-                    system("chmod 777 /mnt/storage");
-                    system('cat /proc/drbd');
-                } elseif (self::getStorageTYpe() == self::STORAGE_TYPE_SINGLE_MASTER and count($backends) == 1) {
-                    system('cat /proc/mounts | grep xvdl', $return);
-                    if ($return != 0) {
-                        system('mount -t ext4 -o defaults,noexec,noatime,noauto /dev/xvdl /mnt/storage', $return);
-                        // ount: wrong fs type, bad option, bad superblock on /dev/xvdl,
-                        // ight be cluster filesystem
-                        if ($return == 32) {
-                            $type = system('blkid /dev/xvdl', $return);
-                            if ($return == 2) {
-                                system('echo "y" | mkfs -t ext4 /dev/xvdl');
-                            }
-                            $type = system('blkid /dev/xvdl', $return);
-                            // test file system type on disk
-                            if (strpos($type, 'TYPE="ext4"') === false) {
-                                throw new \Exception("Disk doesn`t use ext4 filesystem");
-                            }
-                            system('mount -t ext4 -o defaults,noexec,noatime,noauto /dev/xvdl /mnt/storage', $return);
-                            if ($return != 0) {
-                                throw new \Exception("Can`t mount");
-                            }
-                        }
-                        system("chmod 777 /mnt/storage");
-                    }
-                }
-            }
-            if ($ok === true) {
-                file_put_contents(self::EXPORTS_FILE, "/mnt/storage *(rw,sync,no_acl,all_squash,anonuid=48,anongid=48)\n");
-                system('systemctl start nfslock');
-                system('systemctl start nfs');
-                @mkdir('/mnt/nas', 0755);
-                system('mount -t nfs -o rw ' . $this->getStorageHost() . ':/mnt/storage /mnt/nas');
-            }
-        }
-        
-        if (in_array('solr', $services) or in_array('solr-slave', $services)) {
-            $sorconf = "";
-            if (in_array('solr', $services)) {
-                $dir = self::SOLR_MASTER_DIR;
-                ClusterTools::mkdir($dir, 'ezfind', 0755);
-                $sorconf = "DATA_DIR=$dir\n";
-                $cores = array( "ezp-default" ); 
-                $list = Resources\environment::getList();
-                foreach ( $list as $env )
-                {
-                    $params = $env->parameters;
-
-                    $additional_cores = $env->environment->xpath('core');
-                    if ( count($additional_cores) >= 1 )
-                    {
-                        foreach ( $additional_cores as $core )
-                        {
-                            $cores[] = (string)$core;         
-                        }
-                    }
-
-                    $cores[] = $env->name;
-                }
-                //unique the array, otherwise SOLR can crash
-                $cores = array_unique($cores);
-
-                $sorconf = "CORES=\"".join(" ",$cores)."\"\n";
-                $sorconf .= "PARAMETERS=\"-Denable.master=true -Denable.slave=false\"\n";
-            } else {
-                $dir = self::SOLR_SLAVE_DIR;
-                ClusterTools::mkdir($dir, 'ezfind', 0755);
-                $sorconf = "DATA_DIR=$dir\n";
-                $master = self::getSolrMasterHost();
-                if ($master === false) {
-                    echo "SOLR MASTER not present. Can`t start SOLR SLAVE.\n";
-                    $url = "";
-                } else {
-                    $url = "http://" . $master . ":8983/solr/replication";
-                }
-                
-                $sorconf .= "PARAMETERS=\"-Denable.master=false -Denable.slave=true -Dsolr.master.url=$url\"\n";
-            }
-            
-            file_put_contents(self::SOLR_CONFIG_FILE, $sorconf);
-        }
-        
         $this->setupDatabase();
-        
-        if ($this->getStorageHost()) {
-            $dir = "/mnt/nas";
-            if (! file_exists($dir)) {
-                mkdir($dir, 0777, true);
-                chown($dir, "root");
-                chgrp($dir, "root");
-            }
-            echo 'mount -t nfs -o rw ' . $this->getStorageHost() . ':/mnt/storage /mnt/nas' . "\n";
-            system('mount -t nfs -o rw ' . $this->getStorageHost() . ':/mnt/storage /mnt/nas');
-        } else {
-            echo "No storage detected. Won`t mount.\n";
-        }
-
         $this->setupCrons();
-        if (in_array('web', $services)) {
-            $this->setupHTTP();
-            if (! in_array('dev', $services) and $this->isLoadBalancerMember()) {
-                try {
-                    $lb = new lb($this->getLB());
-                    $lb->register($this);
-                } catch (\Exception $e) {
-                    echo (string) $e->getMessage() . "\n";
-                }
-            }
-        }
-    }
-
-    public function checkInstance()
-    {
-        if ($this instanceof ClusterNode and in_array('web', $this->roles())) {
-            $str = @file_get_contents('http://' . $this->ip() . '/ezinfo/is_alive');
-            if ($str != self::IS_ALIVE) {
-                return false;
-            }
-        }
-        return true;
+        $this->setupHTTP();
     }
 
     public function stopServices()
     {
-        $roles = $this->roles();
-        echo "Assigned Roles " . join($roles, ',') . "\n";
         system('crontab -u ec2-user -r');
-        $services = self::getServices($roles);
-        
         system('umount -f /mnt/nas');
-        
-        if (in_array('web', $services)) {
-            if (! in_array('dev', $services) and $this->getLB() and $this->isLoadBalancerMember() and lb::exists($this->getLB())) {
-                $lb = new lb($this->getLB());
-                $lb->deregister($this);
-            }
-        }
         system('systemctl stop autofs');
-        if (in_array('storage', $services) or in_array('storage-slave', $services)) {
-            // will kill myself
-            // ystem( 'killall php' );
-            system('systemctl stop nfs');
-            system('systemctl stop nfslock');
-            system('systemctl stop drbd');
-        }
     }
 }

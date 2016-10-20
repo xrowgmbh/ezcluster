@@ -7,21 +7,7 @@
 Copyright 2011 xrow GmbH. All rights reserved.</documentation>
    </annotation>
 
-   <element name="instance" type="ezcluster:instanceType"></element>
 
-   <complexType name="instanceType">
-   	<sequence>
-   		<element name="role" type="string" maxOccurs="unbounded"
-   			minOccurs="1">
-   		</element>
-   		<element name="cron" type="ezcluster:cronType" maxOccurs="unbounded" minOccurs="0"></element>
-   	</sequence>
-   	<attribute name="name" type="string"></attribute>
-   	<attribute name="database-slave" type="string"></attribute>
-   	<attribute name="bind" type="string"></attribute>
-   	<attribute name="active" type="string"></attribute>
-   	<attribute name="lb" type="string"></attribute>
-   </complexType>
 
    <element name="role" nillable="false">
    	<simpleType>
@@ -42,7 +28,7 @@ Copyright 2011 xrow GmbH. All rights reserved.</documentation>
 
    <complexType name="clusterType">
    	<sequence>
-   		<element name="instance" type="ezcluster:instanceType"
+   		<element name="instance" type="string"
    			maxOccurs="unbounded" minOccurs="1">
                 <annotation>
                 	<documentation>Name of your VM</documentation>
@@ -57,18 +43,18 @@ Copyright 2011 xrow GmbH. All rights reserved.</documentation>
    		<element name="sshkey" type="ezcluster:sshkeyType"
    			maxOccurs="unbounded" minOccurs="0">
    		</element>
-   		<element name="cdn" type="ezcluster:cdnType" maxOccurs="1"
+   		<element name="cdn" type="string" maxOccurs="1"
    			minOccurs="0">
    		</element>
    		<element name="certificate" type="ezcluster:certificateType"
    			maxOccurs="1" minOccurs="0">
    		</element>
 
-   		<element name="rpm" type="ezcluster:rpmType"
+   		<element name="rpm" type="string"
    			maxOccurs="unbounded" minOccurs="0">
    		</element>
    		<element name="database-setting"
-   			type="ezcluster:database-settingType" maxOccurs="unbounded"
+   			type="string" maxOccurs="unbounded"
    			minOccurs="0">
    		</element>
    	</sequence>
@@ -215,11 +201,6 @@ Copyright 2011 xrow GmbH. All rights reserved.</documentation>
 
     </complexType>
 
-    <complexType name="cdnType">
-    	<sequence>
-    		<element name="hostname" type="ezcluster:hostname"></element>
-    	</sequence>
-    </complexType>
 
     <simpleType name="hostname">
     	<restriction base="string"></restriction>
@@ -243,24 +224,10 @@ Copyright 2011 xrow GmbH. All rights reserved.</documentation>
 
     <element name="environment" type="ezcluster:environmentType"></element>
 
-    <simpleType name="rpmType">
-        <annotation>
-        	<documentation>Enter here package names or full URLs to packages.</documentation>
-        </annotation>
-        <restriction base="string"></restriction>
-    </simpleType>
 
-    <complexType name="database-settingType">
-    	<simpleContent>
-    		<extension base="string">
-    			<attribute name="name" type="string"></attribute>
-    		</extension>
-    	</simpleContent>
-    </complexType>
 
 
     
-    <complexType name="NewType"></complexType>
 
     <element name="data-source" type="ezcluster:data-source"></element>
     
