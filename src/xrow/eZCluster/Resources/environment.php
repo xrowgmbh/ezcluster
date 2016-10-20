@@ -411,7 +411,6 @@ class environment
                 throw new \RuntimeException( "Build file '$file' has windows linefeeds" );
             }
             $this->run($file, $this->parameters, $this->dirtmp);
-            unlink($file);
         }
         $this->createYAMLParametersFile();
         $cachedirs = array( "/ezpublish/cache" ,"/app/cache" );
