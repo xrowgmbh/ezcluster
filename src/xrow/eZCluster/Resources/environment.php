@@ -387,8 +387,8 @@ class environment
                 $path = str_replace ( "file://" , "" , $this->parameters["SCM"] );
                 $this->run( "/usr/bin/cp " . join(" ", array(
                     "-R",
-                    $path,
-                    $this->dirtmp
+                    $path . "/*",
+                    $this->dirtmp . "/"
                 )), $this->parameters, $this->dirtmp);
 
             }
