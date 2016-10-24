@@ -387,8 +387,8 @@ class environment
                 $path = str_replace ( "file://" , "" , $this->parameters["SCM"] );
                 $this->run( "/usr/bin/cp " . join(" ", array(
                     "-R",
-                    $path . "/*",
-                    $this->dirtmp . "/"
+                    $path . "/.",
+                    $this->dirtmp
                 )), $this->parameters, $this->dirtmp);
 
             }
@@ -441,15 +441,17 @@ class environment
         try {
             $fs->rename( $this->dir, $this->dir. ".new" );
         }catch(\Exception $e){
+            $fs->chmod( $this->dir . ".new", 0777, null, true );
             $fs->remove( $this->dir . ".new" );
             $fs->rename( $this->dir, $this->dir. ".new" );            
         }
         $fs->rename( $this->dirtmp, $this->dir );
-        $fs->remove( $this->dir . ".new" );
-        # @TODO chmod 777 everything before delete
-        # 
-        # [centos@test ~]$ ls -lisa /var/www/sites/wuv.de.new/.git/objects/48/
-        #  74374385 4 -r--r--r--   1 ec2-user apache  538 Jun 13 16:25 edd813dff3f9df1ba4fcd151126e0584d64c6a
+        try {
+            $fs->remove( $this->dir . ".new" );
+        }catch(\Exception $e){
+            $fs->chmod( $this->dir . ".new", 0777, null, true );
+            $fs->remove( $this->dir . ".new" );
+        }
     }
 
     function run($command, $env = array(), $wd = null)
