@@ -56,70 +56,7 @@ class instance extends Abstracts\xrowEC2Resource
     }
     function name()
     {
-        $parts = explode(".", php_uname("n"), 2);
-        $host = $parts[0];
-        
-        $result = CloudSDK::$config->xpath("/aws/cluster/instance[@name='" . $host . "']");
-        
-        if (isset($result[0])) {
-            return (string) $host;
-        } else {
-            // utofix if there is just one instance
-            $result = CloudSDK::$config->xpath("/aws/cluster/instance");
-            if (count($result) == 1) {
-                if (! isset($result[0]['name'])) {
-                    return "localhost";
-                }
-                return (string) $result[0]['name'];
-            }
-            
-            throw new \Exception('Host "' . $host . '" not known in ezcluster.xml');
-        }
-        return $host;
-    }
-
-    function ip()
-    {
-        if (isset($this->describe()->privateIpAddress)) {
-            return (string) $this->describe()->privateIpAddress;
-        }
-        return gethostbyname(gethostname());
-    }
-
-    final function start()
-    {
-        $response = CloudSDK::factory()->start_instances($this->id);
-        
-        if (! $response->isOK()) {
-            throw new xrowAWSException($response);
-        }
-    }
-
-    final function reboot()
-    {
-        $response = CloudSDK::factory()->reboot_instances($this->id);
-        
-        if (! $response->isOK()) {
-            throw new xrowAWSException($response);
-        }
-    }
-
-    final function stop()
-    {
-        $response = CloudSDK::factory()->stop_instances($this->id);
-        
-        if (! $response->isOK()) {
-            throw new xrowAWSException($response);
-        }
-    }
-
-    final function terminate()
-    {
-        $response = CloudSDK::factory()->terminate_instances($this->id);
-        
-        if (! $response->isOK()) {
-            throw new xrowAWSException($response);
-        }
+        return "localhost";
     }
 
     function describe()

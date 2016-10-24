@@ -28,7 +28,7 @@ class environment
     function __construct($name)
     {
         if ($name) {
-            $xp = "/aws/cluster[ @lb = '" . lb::current() . "' ]/environment[ @name = '" . $name . "' ]";
+            $xp = "/aws/cluster/environment[ @name = '" . $name . "' ]";
             $result = CloudSDK::$config->xpath($xp);
             if ($result === array()) {
                 throw new \Exception("$name not known in configuration");
@@ -162,7 +162,7 @@ class environment
         $this->parameters["AWS_SECRETKEY"] = (string) CloudSDK::$config['secret_key'];
         $this->parameters["AWS_ACCOUNTID"] = (string) CloudSDK::$config['account_id'];
         $solr_master = ClusterNode::getSolrMasterHost();
-        if (instance::current()->ip() == $solr_master or empty($solr_master)) {
+        if (empty($solr_master)) {
             $solr = "http://localhost:8983/solr/#";
         } else {
             $solr = "http://" . $solr_master . ":8983/solr/#";

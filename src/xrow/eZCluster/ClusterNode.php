@@ -5,8 +5,6 @@ use \SimpleXMLElement;
 use \ezcTemplate;
 use \stdClass;
 use xrow\eZCluster\Resources\db;
-use xrow\eZCluster\Resources\lb;
-use xrow\eZCluster\Resources\certificate;
 use xrow\eZCluster\Resources\instance;
 use xrow\eZCluster\Resources;
 use Ssh;
@@ -82,74 +80,16 @@ class ClusterNode extends Resources\instance
         unlink('/tmp/certificate.pem');
     }
 
-    public function init()
-    {
-        $certs = $this->getCertificates();
-        if (is_array($certs)) {
-            foreach ($certs as $cert) {
-                try {
-                    $cert = new certificate((string) $cert['name']);
-                } catch (\Exception $e) {
-                    try {
-                        if (isset($cert->crt_chain)) {
-                            $cert = certificate::create((string) $cert['name'], (string) $cert->crt, (string) $cert->key, (string) $cert->crt_chain);
-                        } else {
-                            $cert = certificate::create((string) $cert['name'], (string) $cert->crt, (string) $cert->key);
-                        }
-                    } catch (\Exception $e) {
-                        $cert = null;
-                    }
-                }
-            }
-        }
-        if ($this->getLB() and ! lb::exists($this->getLB())) {
-            $lb = lb::create($this->getLB(), $this->getZones(), $cert);
-        }
-        
-        $cdns = $this->getCDNs();
-        if ($cdns) {
-            foreach ($cdns as $cdn) {
-                try {
-                    new cdn($cdn);
-                } catch (\Exception $e) {
-                    $hosts = array();
-                    foreach ($hosts as $host) {
-                        $hosts[] = (string) $host;
-                    }
-                    cdn::create($cdn['origin'], $hosts);
-                }
-            }
-        }
-        if (self::getSitesStorageSize()) {
-            $vol = volume::getByPath('/dev/xvdm');
-            if ($vol === false) {
-                echo "Creating sites volume";
-                $vol = volume::create(self::getSitesStorageSize());
-                $vol->attach('/dev/xvdm');
-                system('echo "y" | mkfs -t ext4 /dev/xvdm');
-            }
-            system('mount -t ext4 -o defaults,noatime,auto /dev/xvdm /var/www/sites', $return);
-        }
-        if ($this->getIP()) {
-            try {
-                $ip = new ip($this->getIP());
-                $ip->associate($this);
-            } catch (\Exception $e) {
-                echo $e;
-            }
-        }
-    }
-
     public function setupDatabase()
     {
-        $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment/rds";
+        $xp = "/aws/cluster/environment/rds";
         $result = self::$config->xpath($xp);
         if (is_array($result) and count($result) > 0) {
             $masterdsn = (string) $result[0]['dsn'];
             $masterdetails = eZCluster/Resources/db::translateDSN($masterdsn);
         }
         
-        $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'database' and @name='" . $this->name() . "'] | /aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'dev' and @name='" . $this->name() . "']";
+        $xp = "/aws/cluster/instance[role = 'database' and @name='" . $this->name() . "'] | /aws/cluster/instance[role = 'dev' and @name='" . $this->name() . "']";
         
         $result = self::$config->xpath($xp);
         if (is_array($result) and count($result) > 0) {
@@ -167,13 +107,13 @@ class ClusterNode extends Resources\instance
         ezcDbInstance::set($dbmaster);
         
         if ($dbmaster) {
-            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment/database[@dsn]";
+            $xp = "/aws/cluster/environment/database[@dsn]";
             $result = self::$config->xpath($xp);
             
             foreach ($result as $db) {
                 db::initDB((string) $db['dsn'], $dbmaster);
             }
-            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment/storage[@dsn]";
+            $xp = "/aws/cluster/environment/storage[@dsn]";
             $result = self::$config->xpath($xp);
             foreach ($result as $db) {
                 db::initDB((string) $db['dsn'], $dbmaster);
@@ -241,73 +181,6 @@ class ClusterNode extends Resources\instance
         }
     }
 
-    public function getCertificates()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/certificate");
-        return $result;
-    }
-
-    public function getCDNs()
-    {
-        $result = self::$config->xpath("/aws/cdn");
-        return $result;
-    }
-
-    public function getStorageSize()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
-        if ($result[0]['storage']) {
-            return (int) $result[0]['storage'];
-        } else {
-            return false;
-        }
-    }
-
-    public static function getRAMDiskSize()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
-        if ($result[0]['database-ram-disk']) {
-            return (string) $result[0]['database-ram-disk'];
-        } else {
-            return false;
-        }
-    }
-
-    public static function getSitesStorageSize()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
-        if ($result[0]['sites_storage']) {
-            return (int) $result[0]['sites_storage'];
-        } else {
-            return false;
-        }
-    }
-
-    public static function getZones()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
-        if (isset($result[0]['zones'])) {
-            return explode(",", (string) $result[0]['zones']);
-        } else {
-            return array(
-                CloudSDK::getDefaultRegion()
-            );
-        }
-    }
-    /*
-     * @deprecated
-     * 
-     * */
-    public function getLB()
-    {
-        $result = self::$config->xpath("/aws/cluster/instance[@name='" . Resources\instance::current()->name() . "']/parent::*");
-        if (isset($result[0]['lb'])) {
-            return (string) $result[0]['lb'];
-        } else {
-            return false;
-        }
-    }
-
     public function getInstances()
     {
         $instances = array();
@@ -337,96 +210,12 @@ class ClusterNode extends Resources\instance
 
     public static function getSolrMasterHost()
     {
-        $result = CloudSDK::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance[role = 'solr']");
-        if (isset($result)) {
-            $instances = array();
-            foreach ($result as $node) {
-                $instance = instance::byName((string) $node['name']);
-                if (isset($instance->describe()->instanceState) and $instance->describe()->instanceState->name == 'running') {
-                    $instances[] = $instance;
-                }
-            }
-            
-            foreach ($instances as $instance) {
-                if ((string) instance::current()->describe()->placement->availabilityZone == (string) $instance->describe()->placement->availabilityZone) {
-                    return (string) $instance->describe()->privateIpAddress;
-                }
-            }
-            if (isset($instances[0])) {
-                return (string) $instances[0]->describe()->privateIpAddress;
-            }
-            return false;
-        }
-    }
-
-    public function getDatabaseSlave()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']");
-        return (string) $result[0]['database-slave'];
-    }
-
-    public function getIP()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']");
-        return (string) $result[0]['bind'];
-    }
-
-    public function isLoadBalancerMember()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']");
-        if (isset($result[0]['lb']) and (string) $result[0]['lb'] == 'disabled') {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    public function getStorageVolumeID()
-    {
-        $response = CloudSDK::factory()->describe_volumes();
-        foreach ($response->body->volumeSet->item as $volume) {
-            if (isset($volume->tagSet)) {
-                foreach ($volume->tagSet->item as $tag) {
-                    
-                    if ((string) $tag->key == "Name" and (string) $tag->value == $this->name()) {
-                        return (string) $volume->volumeId;
-                    }
-                }
-            }
-        }
-    }
-
-    public function getStorageType()
-    {
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'storage-slave']");
-        $hasSlave = false;
-        if (isset($result)) {
-            if (count($result) == 1) {
-                $hasSlave = true;
-            }
-        }
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'storage']");
-        
-        if (isset($result)) {
-            if (count($result) == 2) {
-                return self::STORAGE_TYPE_MULTI_MASTER;
-            }
-            if (count($result) == 1) {
-                if ($hasSlave) {
-                    return self::STORAGE_TYPE_MASTER_SLAVE;
-                } else {
-                    return self::STORAGE_TYPE_SINGLE_MASTER;
-                }
-            } else {
-                return self::STORAGE_TYPE_NONE;
-            }
-        }
-        return self::STORAGE_TYPE_NONE;
+        return false;
     }
 
     public function setupHTTP()
     {
-        $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment";
+        $xp = "/aws/cluster/environment";
         $result = self::$config->xpath($xp);
         foreach ($result as $env) {
             $environment = new environment((string)$env["name"]);
@@ -450,7 +239,7 @@ class ClusterNode extends Resources\instance
 
     public function setupMounts()
     {
-        $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment";
+        $xp = "/aws/cluster/environment";
         ClusterTools::mkdir("/nfs", CloudSDK::USER, 0777);
         $result = self::$config->xpath($xp);
         file_put_contents("/etc/auto.master", "/nfs    /etc/auto.ezcluster\n
@@ -489,14 +278,14 @@ class ClusterNode extends Resources\instance
 
         $crondata = "1 * * * * rm -Rf /var/www/sites/*/ezpublish/cache/dev/profiler/\n";
 
-        $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[role = 'admin' and @name='" . $this->name() . "']";
+        $xp = "/aws/cluster/instance[role = 'admin' and @name='" . $this->name() . "']";
         $instance = self::$config->xpath($xp);
 
         $pathprefix = "/var/log/ezcluster";
         ClusterTools::mkdir( self::LOG_DIR, "root", 0777);
 
         if (is_array($instance) and count($instance) > 0) {
-            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/environment[cron]";
+            $xp = "/aws/cluster/environment[cron]";
             $environments = self::$config->xpath($xp);
             $environmentCrondata = "";
 
@@ -509,7 +298,7 @@ class ClusterNode extends Resources\instance
         }
 
         if (is_array($instance) and count($instance) > 0) {
-            $xp = "/aws/cluster[ @lb = '" . $this->getLB() . "' ]/instance[@name='" . $this->name() . "']/cron";
+            $xp = "/aws/cluster/instance[@name='" . $this->name() . "']/cron";
             $crons = self::$config->xpath($xp);
             $crondata .= self::setupCronData($crons);
         }
@@ -569,7 +358,6 @@ class ClusterNode extends Resources\instance
 
     public function startServices()
     {
-        $this->init();
         $this->setupMounts();
         $dir = "/mnt/storage";
         if (! file_exists($dir)) {
