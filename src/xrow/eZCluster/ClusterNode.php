@@ -276,15 +276,11 @@ class ClusterNode extends Resources\instance
             return false;
         }
 
-        $crondata = "1 * * * * rm -Rf /var/www/sites/*/ezpublish/cache/dev/profiler/\n";
-
-        $xp = "/aws/cluster/instance[role = 'admin' and @name='" . $this->name() . "']";
-        $instance = self::$config->xpath($xp);
+        $crondata = "\n";
 
         $pathprefix = "/var/log/ezcluster";
         ClusterTools::mkdir( self::LOG_DIR, "root", 0777);
 
-        if (is_array($instance) and count($instance) > 0) {
             $xp = "/aws/cluster/environment[cron]";
             $environments = self::$config->xpath($xp);
             $environmentCrondata = "";
@@ -295,13 +291,10 @@ class ClusterNode extends Resources\instance
                 $environmentCrondata .= self::setupCronData($crons, $path);
             }
             $crondata .= $environmentCrondata;
-        }
 
-        if (is_array($instance) and count($instance) > 0) {
-            $xp = "/aws/cluster/instance[@name='" . $this->name() . "']/cron";
+            $xp = "/aws/cluster/cron";
             $crons = self::$config->xpath($xp);
             $crondata .= self::setupCronData($crons);
-        }
 
         if (isset($crondata)) {
             echo "Setup crontab " . self::CRONTAB_FILE . " for " . CloudSDK::USER . "\n";
@@ -366,7 +359,6 @@ class ClusterNode extends Resources\instance
             chgrp($dir, "root");
         }
         $this->setupDatabase();
-        $this->setupCrons();
         $this->setupHTTP();
     }
 
