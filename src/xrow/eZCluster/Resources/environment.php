@@ -499,8 +499,7 @@ class environment
     static function getList()
     {
         $list = array();
-        $xp = "/aws/cluster[ @lb = '" . lb::current()->id . "' ]/environment";
-        $result = CloudSDK::$config->xpath($xp);
+        $result = CloudSDK::$config->xpath("/aws/cluster/environment");
         if (is_array($result)) {
             foreach ($result as $environment) {
                 $list[] = new self($environment['name']);

@@ -181,33 +181,6 @@ class ClusterNode extends Resources\instance
         }
     }
 
-    public function getInstances()
-    {
-        $instances = array();
-        $result = self::$config->xpath("/aws/cluster[ @lb = '" . Resources\lb::current() . "' ]/instance");
-        
-        if (isset($result)) {
-            $instances = array();
-            foreach ($result as $node) {
-                $instance = instance::byName((string) $node['name']);
-                if ($instance->describe()->instanceState->name == 'running') {
-                    $instances[] = $instance;
-                }
-            }
-        }
-        return $instances;
-    }
-
-    public function sync()
-    {
-        foreach (self::getInstances() as $instance) {
-            if ($instance->id != $this->id) {
-                echo "rsync root@" . $instance->ip() . ":/tmp/test.txt /tmp/text.txt\n";
-                system();
-            }
-        }
-    }
-
     public static function getSolrMasterHost()
     {
         return false;
