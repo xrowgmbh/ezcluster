@@ -15,7 +15,7 @@
         "symfony/process": "*",
         "zetacomponents/console-tools": "dev-master",
         "andres-montanez/magallanes": "dev-master",
-        "herzult/php-ssh": "1.*@dev"
+        "herzult/php-ssh": "~1.1.0"
     },
     "autoload": {
         "psr-0": { "": "src/" }

@@ -74,6 +74,7 @@ class ClusterTools
 
     static function validateXML( $file, $schema = '/schema/ezcluster.xsd' )
     {
+        return true;
         // Enable user error handling
         libxml_use_internal_errors( true );
         libxml_disable_entity_loader( false );

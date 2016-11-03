@@ -129,18 +129,26 @@ class ClusterNode extends Resources\instance
             throw new \Exception("datasource not defeined for $name");
         }
         $connection = parse_url($environment->environment->datasource['connection']);
-        $configuration = new Ssh\Configuration($connection['host']);
+        
         $authentication = null;
         if (isset($connection['pass'])) {
+            $configuration = new Ssh\Configuration($connection['host']);
             $authentication = new Ssh\Authentication\Password($connection['user'], $connection['pass']);
+            $session = new Ssh\Session($configuration, $authentication);
+        } elseif ( isset($environment->environment->datasource['key'] ) )
+        {
+            $configuration = new Ssh\SshConfigFileConfiguration('/home/'.CloudSDK::USER.'/.ssh/config', $connection['host'] );
+            $session = new Ssh\Session($configuration, $configuration->getAuthentication(null, $connection['user'] ));
         } elseif (file_exists ( "/root/.ssh/id_rsa" ) and file_exists ( "/root/.ssh/id_rsa.pub" ))
-         {
+        {
+            $configuration = new Ssh\Configuration($connection['host']);
             $authentication = new Ssh\Authentication\PublicKeyFile($connection['user'], '/root/.ssh/id_rsa.pub', '/root/.ssh/id_rsa');
+            $session = new Ssh\Session($configuration, $authentication);
         }
         else {
             throw new \Exception("Key or password not given for $name");
         }
-        $session = new Ssh\Session($configuration, $authentication);
+        
         if ($copydb) {
             if (isset($environment->environment->datasource->database['dsn'])) {
                 db::migrateDatabase((string) $environment->environment->datasource->database['dsn'], (string) $environment->environment->database["dsn"], $session);
