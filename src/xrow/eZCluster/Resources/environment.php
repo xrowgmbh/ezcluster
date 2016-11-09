@@ -359,7 +359,6 @@ class environment
         chown($this->dirtmp, CloudSDK::USER);
         chgrp($this->dirtmp, CloudSDK::GROUP);
 
-
         //checkout & execute
         if (! empty($this->parameters["SCM"]) and empty($script) and empty( $bootstrap_script )) {
             $file = $this->dirtmp . "/build";
