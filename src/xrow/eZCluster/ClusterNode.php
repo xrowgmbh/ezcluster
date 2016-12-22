@@ -151,9 +151,11 @@ class ClusterNode extends Resources\instance
         
         if ($copydb) {
             if (isset($environment->environment->datasource->database['dsn'])) {
+                echo "Copy Content Database\n";
                 db::migrateDatabase((string) $environment->environment->datasource->database['dsn'], (string) $environment->environment->database["dsn"], $session);
             }
             if (isset($environment->environment->datasource->storage['dsn'])) {
+                echo "Copy Cluster Database\n";
                 db::migrateDatabase((string) $environment->environment->datasource->storage['dsn'], (string) $environment->environment->storage["dsn"], $session, "scope in ( 'image', 'binaryfile' )");
             }
         }
@@ -178,6 +180,7 @@ class ClusterNode extends Resources\instance
             }else{
                 $command .= '--rsh="/usr/bin/sshpass -p '.$connection['pass'].' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -l '.$connection['user'].'"';
             }
+            echo "Rsync Data\n";
             $command .= $excludesRsync . ' ' . "{$connection['user']}@{$connection['host']}:{$sourcestoragepath}/ {$storagepath}/";
             $environment->run( $command, array(), $environment->dir );
         }
@@ -187,6 +190,7 @@ class ClusterNode extends Resources\instance
             $environment->run("php ezpublish/console --env=prod cache:clear", array(), $environment->dir );
             $environment->run("php ezpublish/console --env=dev cache:clear", array(), $environment->dir );
         }
+        echo "Done copying\n";
     }
 
     public static function getSolrMasterHost()
