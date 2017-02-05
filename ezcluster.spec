@@ -7,10 +7,14 @@ Version: 2.0
 Release: 0.%{shortcommit}%{?dist}.1
 License: GPL
 Group: Applications/Webservice
-URL: http://packages.xrow.com/redhat
+
 Distribution: Linux
 Vendor: xrow GmbH
 Packager: Bjoern Dieding / xrow GmbH <bjoern@xrow.de>
+
+URL:            https://github.com/xrowgmbh/ezcluster
+Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{commit}.tar.gz
+
 BuildRequires: libxslt git
 Requires: yum
 Requires: mariadb-server mariadb
@@ -41,39 +45,34 @@ cp -R * $RPM_BUILD_ROOT%{_datadir}/%{name}/.
 #find $RPM_BUILD_ROOT%{_datadir}/ezcluster -name ".keep" -delete
 cp -R $RPM_BUILD_ROOT%{_datadir}/ezcluster/etc $RPM_BUILD_ROOT%{_sysconfdir}
 
-/usr/bin/composer update -d $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+#/usr/bin/composer update -d $RPM_BUILD_ROOT%{_datadir}/%{name}
 #for f in $RPM_BUILD_ROOT%{_datadir}/ezcluster/schema/*.xsd
 #do
 #	xsltproc --stringparam title "eZ Cluster XML Schema" \
 #                 --output $f.html $RPM_BUILD_ROOT%{_datadir}/ezcluster/build/xs3p/xs3p.xsl $f
 #done
 
-#del unneeded
-rm -Rf $RPM_BUILD_ROOT%{_datadir}/ezcluster/drafts
-rm -Rf $RPM_BUILD_ROOT%{_datadir}/ezcluster/build
-
 mkdir -p $RPM_BUILD_ROOT/var/www/sites
-mkdir -p $RPM_BUILD_ROOT/mnt/storage
-mkdir -p $RPM_BUILD_ROOT/mnt/nas
 
 mkdir $RPM_BUILD_ROOT%{_bindir}
-cp $RPM_BUILD_ROOT%{_datadir}/ezcluster/ezcluster $RPM_BUILD_ROOT%{_bindir}/ezcluster
+cp $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name} $RPM_BUILD_ROOT%{_bindir}/%{name}
 
-chmod +x $RPM_BUILD_ROOT%{_datadir}/ezcluster/ezcluster
-chmod +x $RPM_BUILD_ROOT%{_bindir}/ezcluster
+chmod +x $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name}
+chmod +x $RPM_BUILD_ROOT%{_bindir}/%{name}
 
 %files
 %defattr(644,root,root,755)
 %{_sysconfdir}/httpd/conf.d/xrow.conf
-%{_sysconfdir}/httpd/conf.d/ezcluster.conf
-%{_sysconfdir}/logrotate.d/ezcluster
-%{_sysconfdir}/profile.d/ezcluster.sh
-%{_sysconfdir}/ezcluster/ezcluster.xml.dist
+%{_sysconfdir}/httpd/conf.d/%{name}.conf
+%{_sysconfdir}/logrotate.d/%{name}
+%{_sysconfdir}/profile.d/%{name}.sh
+%{_sysconfdir}/ezcluster/%{name}.xml.dist
 %{_sysconfdir}/httpd/sites/environment.conf
-%{_sysconfdir}/cloud/cloud.cfg.d/ezcluster.cfg
+%{_sysconfdir}/cloud/cloud.cfg.d/%{name}.cfg
 %dir %{_sysconfdir}/httpd/sites    
-%{_datadir}/ezcluster/*
-%{_datadir}/ezcluster/.git*
+%{_datadir}/%{name}/*
+%{_datadir}/%{name}/.git*
 %attr(755, root, root) %{_bindir}/*
 %attr(755, root, root) %{_datadir}/ezcluster/bin/tools/*
 %attr(755, root, root) %{_datadir}/ezcluster/bin/ezcluster
