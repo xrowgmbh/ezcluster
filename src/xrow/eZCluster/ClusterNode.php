@@ -227,11 +227,6 @@ class ClusterNode extends Resources\instance
         $xp = "/aws/cluster/environment";
         ClusterTools::mkdir("/nfs", CloudSDK::USER, 0777);
         $result = self::$config->xpath($xp);
-        file_put_contents("/etc/auto.master", "/nfs    /etc/auto.ezcluster\n
-+auto.master\n");
-        chmod("/etc/auto.master", 0755);
-        chown("/etc/auto.master", CloudSDK::USER);
-        chgrp("/etc/auto.master", CloudSDK::GROUP);
         $mounts = array();
         if (is_array($result)) {
             foreach ($result as $environment) {
@@ -241,18 +236,16 @@ class ClusterNode extends Resources\instance
                     if (strpos($mount, "nfs://") === 0) {
                         ClusterTools::mkdir("/nfs/{$name}", CloudSDK::USER, 0777);
                         $parts = parse_url($mount);
-                        system("mount -t nfs4 -o rw {$parts['host']}:{$parts['path']} /nfs/{$name}");
-                        $mounts[] = "{$name} -fstype=nfs,rw {$parts['host']}:{$parts['path']}";
+                        $mounts[] = "/nfs/{$name} -fstype=nfs4,rw,noatime,noac {$parts['host']}:{$parts['path']}";
                     }
                 }
             }
         }
-        // idn`t get it working
-        // ile_put_contents( "/etc/auto.ezcluster", join( $mounts, "\n" ) );
-        // hmod( "/etc/auto.ezcluster", 0755 );
-        // hown( "/etc/auto.ezcluster", CloudSDK::USER );
-        // hgrp( "/etc/auto.ezcluster", CloudSDK::USER );
-        // ystem("/etc/init.d/autofs start");
+        file_put_contents( "/etc/auto.master.d/ezcluster.autofs", join( $mounts, "\n" ) );
+        chmod( "/etc/auto.master.d/ezcluster.autofs", 0644 );
+        chown( "/etc/auto.master.d/ezcluster.autofs", "root" );
+        chgrp( "/etc/auto.master.d/ezcluster.autofs", "root" );
+        system("systemctl restart autofs");
     }
 
     public function setupCrons()
@@ -350,7 +343,5 @@ class ClusterNode extends Resources\instance
     public function stopServices()
     {
         system('crontab -u ec2-user -r');
-        system('umount -f /mnt/nas');
-        system('systemctl stop autofs');
     }
 }
