@@ -1,7 +1,10 @@
+%global commit      00019506c309226f08abb407f784fb405fc04fc7
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
+
 Name: ezcluster
 Summary: The eZ Cluster of the xrow GmbH
 Version: 2.0
-Release: 83
+Release: 0.%{shortcommit}%{?dist}.1
 License: GPL
 Group: Applications/Webservice
 URL: http://packages.xrow.com/redhat
@@ -12,6 +15,7 @@ BuildRequires: libxslt git
 Requires: yum
 Requires: mariadb-server mariadb
 # mlocate will crawl /mnt/nas
+Conflicts: mlocate
 Conflicts: mod_ssl
 Requires: httpd haproxy nfs-utils nfs4-acl-tools sudo autofs
 Requires: selinux-policy yum-cron
@@ -19,23 +23,25 @@ Requires: libxslt-devel
 Requires: varnish >= 4.0
 Requires(pre): /usr/sbin/useradd
 Requires(postun): /usr/sbin/userdel
-# Wait till composer package exists
-# BuildRequires: /usr/bin/composer
 
-BuildRoot: %{_tmppath}/%{name}-root
+BuildRoot: %{_tmppath}/%{name}
 BuildArch: noarch
 %description
+A rapid app setup tools
+
+%prep
+%autosetup -n %{name}-%{commit}
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
+cp -R * $RPM_BUILD_ROOT%{_datadir}/%{name}/.
 
 %install
-rm -rf $RPM_BUILD_ROOT
-
-git clone git@github.com:xrowgmbh/ezcluster.git $RPM_BUILD_ROOT%{_datadir}/ezcluster
-git --git-dir $RPM_BUILD_ROOT%{_datadir}/ezcluster/.git config core.filemode false
-find $RPM_BUILD_ROOT%{_datadir}/ezcluster -name ".keep" -delete
+#rm -rf $RPM_BUILD_ROOT
+#git clone git@github.com:xrowgmbh/ezcluster.git $RPM_BUILD_ROOT%{_datadir}/%{name}
+#git --git-dir $RPM_BUILD_ROOT%{_datadir}/ezcluster/.git config core.filemode false
+#find $RPM_BUILD_ROOT%{_datadir}/ezcluster -name ".keep" -delete
 cp -R $RPM_BUILD_ROOT%{_datadir}/ezcluster/etc $RPM_BUILD_ROOT%{_sysconfdir}
-git --git-dir $RPM_BUILD_ROOT%{_datadir}/ezcluster/.git stash
 
-/usr/bin/composer update -d $RPM_BUILD_ROOT%{_datadir}/ezcluster
+/usr/bin/composer update -d $RPM_BUILD_ROOT%{_datadir}/%{name}
 #for f in $RPM_BUILD_ROOT%{_datadir}/ezcluster/schema/*.xsd
 #do
 #	xsltproc --stringparam title "eZ Cluster XML Schema" \
