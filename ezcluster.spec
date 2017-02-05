@@ -8,7 +8,6 @@ Release: 0.%{shortcommit}%{?dist}.1
 License: GPL
 Group: Applications/Webservice
 
-Distribution: Linux
 Vendor: xrow GmbH
 Packager: Bjoern Dieding / xrow GmbH <bjoern@xrow.de>
 
