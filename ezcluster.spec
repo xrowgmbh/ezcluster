@@ -37,13 +37,9 @@ A rapid app setup tools
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
 cp -R * $RPM_BUILD_ROOT%{_datadir}/%{name}/.
 
-%install
-#rm -rf $RPM_BUILD_ROOT
-#git clone git@github.com:xrowgmbh/ezcluster.git $RPM_BUILD_ROOT%{_datadir}/%{name}
-#git --git-dir $RPM_BUILD_ROOT%{_datadir}/ezcluster/.git config core.filemode false
-#find $RPM_BUILD_ROOT%{_datadir}/ezcluster -name ".keep" -delete
-cp -R $RPM_BUILD_ROOT%{_datadir}/ezcluster/etc $RPM_BUILD_ROOT%{_sysconfdir}
+%build
 
+cp -R $RPM_BUILD_ROOT%{_datadir}/ezcluster/etc $RPM_BUILD_ROOT%{_sysconfdir}
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php -r "if (hash_file('SHA384', 'composer-setup.php') === '55d6ead61b29c7bdee5cccfb50076874187bd9f21f65d8991d46ec5cc90518f447387fb9f76ebae1fbbacf329e583e30') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
 php composer-setup.php
