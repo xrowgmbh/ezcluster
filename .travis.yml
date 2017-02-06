@@ -3,7 +3,7 @@ language: python
 
 env:
   global:
-    - DOCKER_IMAGE=alectolytic/rpmbuilder-centos
+    - DOCKER_IMAGE=alectolytic/rpmbuilder
     - COPR_REPOSITORY=repository
     - OS_ARCH=x86_64
   matrix:
