@@ -236,7 +236,7 @@ class ClusterNode extends Resources\instance
                     if (strpos($mount, "nfs://") === 0) {
                         ClusterTools::mkdir("/nfs/{$name}", CloudSDK::USER, 0777);
                         $parts = parse_url($mount);
-                        $mounts[] = "/nfs/{$name} -fstype=nfs4,rw,noatime,noac {$parts['host']}:{$parts['path']}";
+                        $mounts[] = "/nfs/{$name} -fstype=nfs4,rw {$parts['host']}:{$parts['path']}";
                     }
                 }
             }
