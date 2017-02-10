@@ -420,9 +420,9 @@ class environment
         if (file_exists($file)) {
             chmod( $file, 0755);
             if(strpos(file_get_contents($file), "\r\n") !== false) {
-                $file = file_get_contents("file.php");
-                $file = str_replace("\r", "", $file);
-                file_put_contents("file.php", $file);
+                $f = file_get_contents($file);
+                $f = str_replace("\r", "", $f);
+                file_put_contents($file, $f);
                 //throw new \RuntimeException( "Build file '$file' has windows linefeeds" );
             }
             $this->run($file, $this->parameters, $this->dirtmp);
