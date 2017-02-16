@@ -1,11 +1,15 @@
 <?php
-namespace xrow\eZCluster;
+namespace CloudBundle\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use xrow\eZCluster\CloudSDK as CloudSDK;
+use xrow\eZCluster\ClusterNode as ClusterNode;
+use xrow\eZCluster\ClusterTools as ClusterTools;
+use xrow\eZCluster\Resources\environment as Environment;
 
 class eZClusterCommand extends Command
 {
@@ -20,15 +24,15 @@ class eZClusterCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $output->setVerbosity(OutputInterface::VERBOSITY_DEBUG);
-        
+
         CloudSDK::init();
         if ($args = $input->getArgument('arguments')) {
             switch ($args[0]) {
                 case 'validatexml':
+                    CloudSDK::init();
                     echo "Using XML LIB version " . LIBXML_DOTTED_VERSION . "\n";
                     try {
-                        $file = xrowAWSSDK::CONFIG_FILE;
-                        xrowClusterTools::validateXML($file);
+                        ClusterTools::validateXML(CloudSDK::CONFIG_FILE);
                         echo $file . " is valid.\n";
                     } catch (Exception $e) {
                         echo $e->getMessage();
@@ -49,7 +53,7 @@ class eZClusterCommand extends Command
                     $node->startServices();
                     break;
                 case 'init':
-                    CloudSDK::init();
+                    CloudSDK::init(true);
                     break;
                 case 'remove':
                     $class = $args[1];
@@ -83,71 +87,16 @@ class eZClusterCommand extends Command
                 case 'bootstrap':
                     
                     if (isset($args[1])) {
-                        $environment = new Resources\environment($args[1]);
+                        $environment = new Environment($args[1]);
                         $environment->setup();
                         ClusterNode::getInstance()->setupCrons();
                     } else {
-                        foreach (Resources\environment::getList() as $environment) {
+                        foreach (Environment::getList() as $environment) {
                             $environment->clean();
                             $environment->setup();
                             ClusterNode::getInstance()->setupCrons();
                         }
                     }
-                    break;
-                case 'csr':
-                    ClusterNode::getInstance()->csr();
-                    break;
-                case 'verify':
-                    $emailaddress = $args[1];
-                    if (empty($emailaddress)) {
-                        throw new Exception("Please provide an email address.");
-                    }
-                    $email = xrowAWSSDK::factoryAWS('AmazonSES');
-                    $response = $email->verify_email_address($emailaddress);
-                    if (! $response->isOK()) {
-                        var_dump($response);
-                    }
-                    break;
-                case 'send':
-                    $emailaddress = $args[1];
-                    $subject = $args[2];
-                    $file = $args[3];
-                    xrowClusterTools::sendMail($emailaddress, file_get_contents($file), $subject);
-                    break;
-                case 'vagrant':
-                    xrowClusterTools::vagrant();
-                    break;
-                case 'load':
-                    switch ($args[1]) {
-                        case 'snapshot':
-                            $diskpath = "/dev/xvdl";
-                            $vol = volume::createFromSnapshot($args[2]);
-                            $vol->attach($diskpath);
-                            break;
-                    }
-                    break;
-                case 'test':
-                    echo "Test some stuff\n";
-                    $diskpath = "/dev/xvdl";
-                    try {
-                        $vol = volume::getByPath($diskpath);
-                    } catch (Exception $e) {
-                        echo "No volume attached to $diskpath";
-                    }
-                    if ($vol === false) {
-                        $vol = volume::create(10);
-                        $vol->attach($diskpath);
-                    } else {
-                        $vol->detach();
-                    }
-                    break;
-                case 'schemasave':
-                    $service = new xroweZClusterService();
-                    $service->save();
-                    break;
-                case 'amis':
-                    $service = new xroweZClusterService();
-                    $service->amis();
                     break;
                 default:
                     $output->writeln('<error>Choose one action</error>');

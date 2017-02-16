@@ -32,8 +32,6 @@ class ClusterNode extends Resources\instance
     const PLACEMENT_GROUP = 'ezcluster';
 
     const MYSQL_DIR = "/var/lib/mysql";
-
-    const LOG_DIR = "/var/log/ezcluster";
     
     const SOLR_MASTER_DIR = "/mnt/storage/ezfind";
 
@@ -64,24 +62,6 @@ class ClusterNode extends Resources\instance
             self::$config = new \SimpleXMLElement($str);
         }
     }
-
-    public function csr()
-    {
-        echo "Creating certificate signing request \n";
-        system('openssl genrsa 4096 > /tmp/private.pem');
-        system('openssl req -new -key /tmp/private.pem -out /tmp/csr.pem');
-        system('openssl x509 -req -days 3650 -in /tmp/csr.pem -signkey /tmp/private.pem -out /tmp/certificate.pem');
-        echo "Private key:\n";
-        echo file_get_contents('/tmp/private.pem');
-        echo "Certificate signing request:\n";
-        echo file_get_contents('/tmp/csr.pem');
-        echo "Self-signed Certificate:\n";
-        echo file_get_contents('/tmp/certificate.pem');
-        unlink('/tmp/private.pem');
-        unlink('/tmp/csr.pem');
-        unlink('/tmp/certificate.pem');
-    }
-
     public function setupDatabase()
     {
         $xp = "/aws/cluster/environment/rds";
@@ -257,10 +237,6 @@ class ClusterNode extends Resources\instance
         }
 
         $crondata = "\n";
-
-        $pathprefix = "/var/log/ezcluster";
-        ClusterTools::mkdir( self::LOG_DIR, "root", 0777);
-
             $xp = "/aws/cluster/environment[cron]";
             $environments = self::$config->xpath($xp);
             $environmentCrondata = "";
@@ -316,15 +292,15 @@ class ClusterNode extends Resources\instance
     {
         if((string) $cron['name'])
         {
-            $log = self::LOG_DIR . '/' . (string) $cron['name'] . ".cron.log";
+            $log = CloudSDK::LOG_DIR . '/' . (string) $cron['name'] . ".cron.log";
         }
         elseif ((string) $cron['group'])
         {
-            $log = self::LOG_DIR . '/' . $cron['group'] . ".cron.log";
+            $log = CloudSDK::LOG_DIR . '/' . $cron['group'] . ".cron.log";
         }
         elseif ((string) $cron['cmd'])
         {
-            $log = self::LOG_DIR . '/' . crc32($cron['cmd']) . ".cron.log";
+            $log = CloudSDK::LOG_DIR . '/' . crc32($cron['cmd']) . ".cron.log";
         }
         return $log;
     }

@@ -11,6 +11,8 @@ class CloudSDK
     const SITES_ROOT = '/var/www/sites';
     const USER = 'ec2-user';
     const GROUP = 'apache';
+    const LOG_DIR = "/var/log/ezcluster";
+    
     public static $ezcTemplateConfiguration;
     const CONFIG_FILE = '/etc/ezcluster/ezcluster.xml';
     const XML_NAMESPACE = 'http://www.xrow.com/schema/ezcluster';
@@ -65,7 +67,7 @@ class CloudSDK
         return trim( @file_get_contents( 'http://169.254.169.254/latest/meta-data/placement/availability-zone' ) );
     }
 
-    public static function init( $renew = false )
+    public static function init()
     {
         date_default_timezone_set( 'UTC' );
         $user = posix_getpwuid(posix_getuid());
@@ -73,71 +75,15 @@ class CloudSDK
         {
             throw new \Exception( "You need to be root to execute the command." );
         }
+        ClusterTools::mkdir( self::LOG_DIR, "root", 0777 );
+        
         self::$ezcTemplateConfiguration = new \ezcTemplateConfiguration(dirname(__FILE__) . DIRECTORY_SEPARATOR . "templates", sys_get_temp_dir() . "/.compilation", new \ezcTemplateNoContext());
         self::$ezcTemplateConfiguration->checkModifiedTemplates = false;
         self::$ezcTemplateConfiguration->disableCache = true;
         $info = ezcSystemInfo::getInstance();
-        //Testing for init AWS
-        $fp = @fsockopen( "169.254.169.254", 80, $errno, $errstr, 1 );
-        if ( $fp )
-        {
-            fclose( $fp );
-            self::$cloud = self::CLOUD_TYPE_AWS;
-        }
-        elseif ( $info->osType == 'win32' )
-        {
-            self::$cloud = self::CLOUD_TYPE_SIMPLE;
-            $renew = true;
-        }
-        else
-        {
-            self::$cloud = self::CLOUD_TYPE_SIMPLE;
-        }
-        
-        //AWS magic not supported anymore, AWS SDK need upgade to version 2
+
         self::$cloud = self::CLOUD_TYPE_SIMPLE;
-        if (!defined('CLOUD'))
-        {
-        	define( 'CLOUD', self::$cloud );
-        }
-        if ( ! file_exists( self::CONFIG_FILE ) or $renew )
-        {
-            if ( $info->osType == 'win32' and self::$cloud === self::CLOUD_TYPE_SIMPLE )
-            {
-                $data = trim( file_get_contents( self::basedir() . '/build/min-ezcluster.xml' ) );
-            }
-            elseif ( file_exists( self::CONFIG_FILE ) )
-            {
-                $data = trim( file_get_contents( self::CONFIG_FILE ) );
-            }
-            elseif ( self::$cloud === self::CLOUD_TYPE_AWS )
-            {
-                $data = trim( @file_get_contents( 'http://169.254.169.254/latest/user-data' ) );
-                if ( strpos( $data, 'http' ) === 0 )
-                {
-                	$data = trim( file_get_contents( $data ) );
-                }
-            }
-            
-            if ( isset($data) && $data != "" )
-            {
-                $data = mb_convert_encoding( $data, 'UTF-8' );
-                libxml_use_internal_errors( true );
-                
-                $data = str_replace( "xmlns=", "ns=", $data );
-                $userdata = new SimpleXMLElement( $data );
-                if ( ! $userdata )
-                {
-                    $str = "";
-                    foreach ( libxml_get_errors() as $error )
-                    {
-                        $str .= $error->message;
-                    }
-                    throw new \Exception( "Failed loading XML: \n" . $str );
-                }
-                libxml_use_internal_errors( false );
-            }
-        }
+
         if ( file_exists( self::CONFIG_FILE ) )
         {
             self::$config = new SimpleXMLElement( file_get_contents( self::CONFIG_FILE ) );

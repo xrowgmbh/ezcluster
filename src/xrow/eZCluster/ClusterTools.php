@@ -50,28 +50,22 @@ class ClusterTools
         libxml_clear_errors();
         return $return;
     }
-
-    static function sendMail( $emailaddress, $text, $subject = null )
+    static function csr()
     {
-        if ( empty( $emailaddress ) )
-        {
-            throw new \Exception( "Please provide an email address." );
-        }
-        $email = CloudSDK::factoryAWS2( 'SesClient' );
-        
-        $response = $email->send_email( 'service@xrow.com', array( 
-            'ToAddresses' => $emailaddress 
-        ), array( 
-            'Subject.Data' => $subject , 
-            'Body.Text.Data' => $text 
-        ) );
-        if ( ! $response->isOK() )
-        {
-            throw new \Exception(  (string) $response->body->Errors->Error->Message );
-        }
-        return true; 
+        echo "Creating certificate signing request \n";
+        system('openssl genrsa 4096 > /tmp/private.pem');
+        system('openssl req -new -key /tmp/private.pem -out /tmp/csr.pem');
+        system('openssl x509 -req -days 3650 -in /tmp/csr.pem -signkey /tmp/private.pem -out /tmp/certificate.pem');
+        echo "Private key:\n";
+        echo file_get_contents('/tmp/private.pem');
+        echo "Certificate signing request:\n";
+        echo file_get_contents('/tmp/csr.pem');
+        echo "Self-signed Certificate:\n";
+        echo file_get_contents('/tmp/certificate.pem');
+        unlink('/tmp/private.pem');
+        unlink('/tmp/csr.pem');
+        unlink('/tmp/certificate.pem');
     }
-
     static function validateXML( $file, $schema = '/schema/ezcluster.xsd' )
     {
         return true;
@@ -123,23 +117,21 @@ class ClusterTools
         return false;
     }
 
-    static public function mkdir( $dir, $user = false, $permissions = 0775, $group = CloudSDK::GROUP )
+    static public function mkdir( $dir, $user = CloudSDK::USER, $permissions = 0775, $group = CloudSDK::GROUP )
     {
         if ( is_dir( $dir ) )
         {
             return false;
         }
-        $old = umask(0);
         if ( !mkdir( $dir, $permissions, true ) )
         {
-            throw new \Exception( "Can`t create directory " . $dir );
+            throw new \Exception( get_current_user() . " can`t create directory \"" . $dir . "\"" );
         }
         if ( $user !== false )
         {
             chown( $dir, $user );
             chgrp( $dir, $group );
         }
-        umask($old);
     }
 
     static public function cleanString( $name )
