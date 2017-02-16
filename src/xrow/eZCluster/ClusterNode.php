@@ -228,7 +228,7 @@ class ClusterNode extends Resources\instance
     {
         $xp = "/aws/cluster/environment";
         ClusterTools::mkdir("/nfs", CloudSDK::USER, 0777);
-        file_put_contents( "/etc/auto.master.d/ezcluster.autofs", "" );# "/nfs   ".self::AUTOFS_FILE."\n"
+        file_put_contents( "/etc/auto.master.d/ezcluster.autofs", "/nfs   ".self::AUTOFS_FILE."\n" ); 
         $result = self::$config->xpath($xp);
         $mounts = array();
         if (is_array($result)) {
