@@ -130,7 +130,10 @@ class ClusterTools
             return false;
         }
         $old = umask(0);
-        mkdir( $dir, $permissions, true );
+        if ( !mkdir( $dir, $permissions, true ) )
+        {
+            throw new \Exception( "Can`t create directory " . $dir );
+        }
         if ( $user !== false )
         {
             chown( $dir, $user );

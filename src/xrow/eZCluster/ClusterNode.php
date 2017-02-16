@@ -38,6 +38,8 @@ class ClusterNode extends Resources\instance
     const SOLR_MASTER_DIR = "/mnt/storage/ezfind";
 
     const SOLR_SLAVE_DIR = "/mnt/ephemeral/ezfind";
+    
+    const AUTOFS_FILE = "/etc/auto.misc";
 
     const CRON_DEFAULT_MEMORY_LIMIT = "512M";
     // place in SDK
@@ -226,25 +228,25 @@ class ClusterNode extends Resources\instance
     {
         $xp = "/aws/cluster/environment";
         ClusterTools::mkdir("/nfs", CloudSDK::USER, 0777);
+        file_put_contents( "/etc/auto.master.d/ezcluster.autofs", "" );# "/nfs   ".self::AUTOFS_FILE."\n"
         $result = self::$config->xpath($xp);
         $mounts = array();
         if (is_array($result)) {
-            foreach ($result as $environment) {
+            foreach ($result as $key => $environment) {
                 $name = (string) $environment['name'];
                 if (isset($environment->storage['mount'])) {
                     $mount = (string) $environment->storage['mount'];
                     if (strpos($mount, "nfs://") === 0) {
-                        ClusterTools::mkdir("/nfs/{$name}", CloudSDK::USER, 0777);
                         $parts = parse_url($mount);
-                        $mounts[] = "/nfs/{$name} -fstype=nfs4,rw {$parts['host']}:{$parts['path']}";
+                        $mounts[] = "{$name}        \t-fstype=nfs4,rw,soft,intr    {$parts['host']}:{$parts['path']}";
                     }
                 }
             }
         }
-        file_put_contents( "/etc/auto.master.d/ezcluster.autofs", join( $mounts, "\n" ) );
-        chmod( "/etc/auto.master.d/ezcluster.autofs", 0644 );
-        chown( "/etc/auto.master.d/ezcluster.autofs", "root" );
-        chgrp( "/etc/auto.master.d/ezcluster.autofs", "root" );
+        file_put_contents( self::AUTOFS_FILE, join( $mounts, "\n" ) . "\n" );
+        chmod( self::AUTOFS_FILE, 0644 );
+        chown( self::AUTOFS_FILE, "root" );
+        chgrp( self::AUTOFS_FILE, "root" );
         system("systemctl restart autofs");
     }
 

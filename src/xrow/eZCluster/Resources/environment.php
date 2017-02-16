@@ -126,9 +126,6 @@ class environment
                 if (isset($db['dir'])) {
                     $dfsdetails['mount'] .= "/" . (string) $db['dir'];
                 }
-                if (! is_dir($dfsdetails['mount'])) {
-                    ClusterTools::mkdir($dfsdetails['mount'], CloudSDK::USER, 0777);
-                }
             }
             if (isset($db['memcached']))
                 $dfsdetails['memcached'] = (string) $db['memcached'];
