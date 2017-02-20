@@ -19,7 +19,7 @@
     "autoload": {
         "psr-4": { 
             "": "src/",
-            "xrow\\eZCluster": "src/xrow/eZCluster"
+            "xrow\\eZCluster\\": "src/xrow/eZCluster"
         },
         "classmap": [ "app/AppKernel.php", "app/AppCache.php" ]
     }
