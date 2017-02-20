@@ -8,8 +8,8 @@
         "sensio/distribution-bundle": "^5.0",
         "sensio/framework-extra-bundle": "^3.0",
         "aws/aws-sdk-php": "2.*",
-	    "amazonwebservices/aws-sdk-for-php": "*",
-	    "zetacomponents/base": "*",
+        "amazonwebservices/aws-sdk-for-php": "*",
+        "zetacomponents/base": "*",
         "zetacomponents/template": "*",
         "zetacomponents/database": "*",
         "zetacomponents/system-information": "*",
@@ -17,7 +17,10 @@
         "herzult/php-ssh": "~1.1.0"
     },
     "autoload": {
-        "psr-4": { "": "src/", "xrow\eZCluster": "src/xrow/eZCluster"  },
+        "psr-4": { 
+            "": "src/",
+            "xrow\\eZCluster": "src/xrow/eZCluster"
+        },
         "classmap": [ "app/AppKernel.php", "app/AppCache.php" ]
     }
 }
