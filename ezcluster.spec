@@ -1,4 +1,4 @@
-%global commit      00019506c309226f08abb407f784fb405fc04fc7
+%global commit      917a5e1a5df2e0e1e74da341dfed57c18dbe6c5d
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name: ezcluster
@@ -14,15 +14,14 @@ Packager: Bjoern Dieding / xrow GmbH <bjoern@xrow.de>
 URL:            https://github.com/xrowgmbh/ezcluster
 Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{commit}.tar.gz
 
-BuildRequires: libxslt git
+BuildRequires: libxslt libxslt-devel
 Requires: yum
-Requires: mariadb-server mariadb
+Requires: composer
 # mlocate will crawl /mnt/nas
 Conflicts: mlocate
 Conflicts: mod_ssl
-Requires: httpd haproxy nfs-utils nfs4-acl-tools sudo autofs
-Requires: selinux-policy yum-cron
-Requires: libxslt-devel
+Requires: httpd nfs-utils nfs4-acl-tools sudo autofs
+Requires: selinux-policy
 Requires: varnish >= 4.0
 Requires(pre): /usr/sbin/useradd
 Requires(postun): /usr/sbin/userdel
@@ -34,53 +33,33 @@ A rapid app setup tools
 
 %prep
 %autosetup -n %{name}-%{commit}
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
-cp -R * $RPM_BUILD_ROOT%{_datadir}/%{name}/.
 
 %build
 
-cp -R $RPM_BUILD_ROOT%{_datadir}/ezcluster/etc $RPM_BUILD_ROOT%{_sysconfdir}
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php -r "if (hash_file('SHA384', 'composer-setup.php') === '55d6ead61b29c7bdee5cccfb50076874187bd9f21f65d8991d46ec5cc90518f447387fb9f76ebae1fbbacf329e583e30') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-php composer-setup.php
-php -r "unlink('composer-setup.php');"
-bin/composer update -d $RPM_BUILD_ROOT%{_datadir}/%{name}
-php -r "unlink('bin/composer');"
+composer install
 
-#for f in $RPM_BUILD_ROOT%{_datadir}/ezcluster/schema/*.xsd
-#do
-#	xsltproc --stringparam title "eZ Cluster XML Schema" \
-#                 --output $f.html $RPM_BUILD_ROOT%{_datadir}/ezcluster/build/xs3p/xs3p.xsl $f
-#done
+%install
 
-mkdir -p $RPM_BUILD_ROOT/var/www/sites
-
-mkdir $RPM_BUILD_ROOT%{_bindir}
-cp $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name} $RPM_BUILD_ROOT%{_bindir}/%{name}
-
+install -m 755 -d %{buildroot}%{_bindir}
+install -m 755 -d %{buildroot}%{_datadir}/%{name}
+cp -R * $RPM_BUILD_ROOT%{_datadir}/%{name}
+install -m 777 -d %{buildroot}/var/www/sites
 chmod +x $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name}
-chmod +x $RPM_BUILD_ROOT%{_bindir}/%{name}
+ln -s ../%{name} %{buildroot}%{_bindir}/%{name}
+cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
 
 %files
 %defattr(644,root,root,755)
-%{_sysconfdir}/httpd/conf.d/xrow.conf
-%{_sysconfdir}/httpd/conf.d/%{name}.conf
-%{_sysconfdir}/logrotate.d/%{name}
-%{_sysconfdir}/profile.d/%{name}.sh
-%{_sysconfdir}/ezcluster/%{name}.xml.dist
-%{_sysconfdir}/httpd/sites/environment.conf
-%{_sysconfdir}/cloud/cloud.cfg.d/%{name}.cfg
+%{_sysconfdir}/*
 %dir %{_sysconfdir}/httpd/sites    
-%{_datadir}/%{name}/*
-%{_datadir}/%{name}/.git*
-%attr(755, root, root) %{_bindir}/*
-%attr(755, root, root) %{_datadir}/ezcluster/bin/tools/*
-%attr(755, root, root) %{_datadir}/ezcluster/bin/ezcluster
+%{_datadir}/*
+%{_bindir}/*
+%exclude %{_datadir}/bin
+%attr(755, root, root) %{_datadir}/%{name}/bin/*
 %attr(777, root, root) /var/www/sites
 %attr(644, root, root) %{_sysconfdir}/systemd/system/ezcluster.service
 %attr(440, root, root) %{_sysconfdir}/sudoers.d/ezcluster
-%dir /mnt/nas
-%dir /mnt/storage
+%doc README.md
 
 %pre
 
