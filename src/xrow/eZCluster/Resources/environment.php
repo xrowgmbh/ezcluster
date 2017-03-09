@@ -407,10 +407,15 @@ class environment
             file_put_contents($file, $bootstrap_script);
         }
         //store vars for later execution
-        $varfile= "";
+        $varfile = "#!/bin/bash\n";
         foreach( $this->parameters as $key => $var ){
             $varfile .= "export $key=\"$var\"\n";
         }
+        $varfile .= "if [ $# -ne 0 ]\n";
+        $varfile .= "then\n";
+        $varfile .= "exec \"$@\"\n";
+        $varfile .= "fi\n";
+
         file_put_contents($this->dirtmp . "/variables.bash",$varfile);
         chmod( $this->dirtmp . "/variables.bash", 0755);
         
