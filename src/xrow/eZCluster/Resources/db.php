@@ -77,6 +77,14 @@ class db extends Abstracts\xrowEC2Resource
                 $dump .= " --where=\"$where\"";
             }
             $dump .= " --databases " . $source['database'] . " | gzip > " . $dumpname;
+            # Test for mysqldump on target server
+            try {
+                $exec->run("mysqldump --help");
+            } catch (Exception $e) {
+                echo "There was a problem executing mysqldump on target server";
+                throw $e;
+            }
+            
             $exec->run($dump);
             $sftp = $session->getSftp();
             $sftp->receive( $dumpname, $dumpname);

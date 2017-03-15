@@ -105,6 +105,7 @@ class ClusterNode extends Resources\instance
 
     public function copyDataFromSource($name = null, $copydb = true, $copydata = true)
     {
+        $this->setupMounts();
         $environment = new Resources\environment($name);
         
         if (! isset($environment->environment->datasource)) {
@@ -147,6 +148,8 @@ class ClusterNode extends Resources\instance
         $excludesRsync = '';
         $excludes = array(
             "cache/**",
+            "log/**",
+            "webdav/**",
             "autoload/**"
         );
         foreach ($excludes as $exclude) {
