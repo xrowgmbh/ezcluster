@@ -159,7 +159,7 @@ class ClusterNode extends Resources\instance
             if (! is_dir($storagepath)) {
                 ClusterTools::mkdir($storagepath, CloudSDK::USER, 0777);
             }
-            $command = 'rsync -avztr --no-p --no-t --no-super --no-o --no-g --delete-excluded ';
+            $command = 'rsync -avztr --no-p --no-t --no-super --no-o --no-g --delete-excluded --copy-links ';
             if ( !isset( $connection['pass'] ) ){
                 $command .= '--rsh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 22" ';
             }else{
@@ -174,6 +174,9 @@ class ClusterNode extends Resources\instance
         } elseif (file_exists($environment->dir . "/" . "ezpublish/console")) {
             $environment->run("php ezpublish/console --env=prod cache:clear", array(), $environment->dir );
             $environment->run("php ezpublish/console --env=dev cache:clear", array(), $environment->dir );
+        } elseif (file_exists($environment->dir . "/" . "app/console")) {
+            $environment->run("php app/console --env=prod cache:clear", array(), $environment->dir );
+            $environment->run("php app/console --env=dev cache:clear", array(), $environment->dir );
         }
         echo "Done copying\n";
     }
