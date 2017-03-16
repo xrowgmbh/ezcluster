@@ -73,7 +73,7 @@ class eZClusterCommand extends Command
                     break;
                 case 'bootstrap':
                     
-                    if (isset($args[1])) {
+                    if (isset($args[0])) {
                         $environment = new Resources\environment($args[0]);
                         $environment->setup();
                         ClusterNode::getInstance()->setupCrons();
