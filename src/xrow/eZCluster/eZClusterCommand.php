@@ -57,17 +57,17 @@ class eZClusterCommand extends Command
                     ClusterNode::getInstance()->setupCrons();
                     break;
                 case 'update':
-                    if ($args[1]) {
+                    if ($args[0]) {
                         ClusterNode::getInstance()->copyDataFromSource($args[0]);
                     }
                     break;
                 case 'update-database':
-                    if ($args[1]) {
+                    if ($args[0]) {
                         ClusterNode::getInstance()->copyDataFromSource($args[0], true, false );
                     }
                     break;
                 case 'update-storage':
-                    if ($args[1]) {
+                    if ($args[0]) {
                         ClusterNode::getInstance()->copyDataFromSource($args[0], false, true );
                     }
                     break;
