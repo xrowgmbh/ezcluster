@@ -14,7 +14,8 @@ class eZClusterCommand extends Command
     {
         $this->setName('ezcluster')
             ->setDescription('eZ Cluster main programm')
-            ->addArgument('arguments', InputArgument::IS_ARRAY, 'What action do you want to perform?');
+            ->addArgument('action', InputArgument::REQUIRED, 'Who do you want to do?')
+            ->addArgument('arguments', InputArgument::IS_ARRAY, 'Parameters of the action');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -22,8 +23,9 @@ class eZClusterCommand extends Command
         $output->setVerbosity(OutputInterface::VERBOSITY_DEBUG);
         
         CloudSDK::init();
-        if ($args = $input->getArgument('arguments')) {
-            switch ($args[0]) {
+        if ( !empty($input->getArgument('action') ) ) {
+            $args = $input->getArgument('arguments');
+            switch ($input->getArgument('action')) {
                 case 'validatexml':
                     echo "Using XML LIB version " . LIBXML_DOTTED_VERSION . "\n";
                     try {
@@ -48,42 +50,31 @@ class eZClusterCommand extends Command
                     $node->stopServices();
                     $node->startServices();
                     break;
-                case 'init':
-                    CloudSDK::init();
-                    break;
-                case 'remove':
-                    $class = $args[1];
-                    $obj = new $class($args[2]);
-                    $obj->delete();
-                    break;
                 case 'migrate':
-                    db::migrateDatabase($args[1], $args[2]);
-                    break;
-                case 'sync':
-                    ClusterNode::getInstance()->sync();
+                    db::migrateDatabase($args[0], $args[1]);
                     break;
                 case 'setupcrons':
                     ClusterNode::getInstance()->setupCrons();
                     break;
                 case 'update':
                     if ($args[1]) {
-                        ClusterNode::getInstance()->copyDataFromSource($args[1]);
+                        ClusterNode::getInstance()->copyDataFromSource($args[0]);
                     }
                     break;
                 case 'update-database':
                     if ($args[1]) {
-                        ClusterNode::getInstance()->copyDataFromSource($args[1], true, false );
+                        ClusterNode::getInstance()->copyDataFromSource($args[0], true, false );
                     }
                     break;
                 case 'update-storage':
                     if ($args[1]) {
-                        ClusterNode::getInstance()->copyDataFromSource($args[1], false, true );
+                        ClusterNode::getInstance()->copyDataFromSource($args[0], false, true );
                     }
                     break;
                 case 'bootstrap':
                     
                     if (isset($args[1])) {
-                        $environment = new Resources\environment($args[1]);
+                        $environment = new Resources\environment($args[0]);
                         $environment->setup();
                         ClusterNode::getInstance()->setupCrons();
                     } else {
@@ -93,61 +84,6 @@ class eZClusterCommand extends Command
                             ClusterNode::getInstance()->setupCrons();
                         }
                     }
-                    break;
-                case 'csr':
-                    ClusterNode::getInstance()->csr();
-                    break;
-                case 'verify':
-                    $emailaddress = $args[1];
-                    if (empty($emailaddress)) {
-                        throw new Exception("Please provide an email address.");
-                    }
-                    $email = xrowAWSSDK::factoryAWS('AmazonSES');
-                    $response = $email->verify_email_address($emailaddress);
-                    if (! $response->isOK()) {
-                        var_dump($response);
-                    }
-                    break;
-                case 'send':
-                    $emailaddress = $args[1];
-                    $subject = $args[2];
-                    $file = $args[3];
-                    xrowClusterTools::sendMail($emailaddress, file_get_contents($file), $subject);
-                    break;
-                case 'vagrant':
-                    xrowClusterTools::vagrant();
-                    break;
-                case 'load':
-                    switch ($args[1]) {
-                        case 'snapshot':
-                            $diskpath = "/dev/xvdl";
-                            $vol = volume::createFromSnapshot($args[2]);
-                            $vol->attach($diskpath);
-                            break;
-                    }
-                    break;
-                case 'test':
-                    echo "Test some stuff\n";
-                    $diskpath = "/dev/xvdl";
-                    try {
-                        $vol = volume::getByPath($diskpath);
-                    } catch (Exception $e) {
-                        echo "No volume attached to $diskpath";
-                    }
-                    if ($vol === false) {
-                        $vol = volume::create(10);
-                        $vol->attach($diskpath);
-                    } else {
-                        $vol->detach();
-                    }
-                    break;
-                case 'schemasave':
-                    $service = new xroweZClusterService();
-                    $service->save();
-                    break;
-                case 'amis':
-                    $service = new xroweZClusterService();
-                    $service->amis();
                     break;
                 default:
                     $output->writeln('<error>Choose one action</error>');

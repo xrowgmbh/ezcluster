@@ -274,8 +274,23 @@ class ClusterNode extends Resources\instance
             if ((string) $cron['timing'])
             {
                 $log = self::getLogfileName($cron);
-
-                if ((string) $cron['group'] and $path !== false) {
+                if ((string) $cron['symfony'] and $path !== false) {
+                    if ( file_exists( $path . '/ezpublish/console' ) )
+                    {
+                        $consolecmd = "ezpublish/console";
+                    }
+                    if ( file_exists( $path . '/bin/console' ) )
+                    {
+                        $consolecmd = "bin/console";
+                    }
+                    else
+                    {
+                        $consolecmd = "app/console";
+                    }
+                    $memory_limit = (isset($cron['memory_limit'])) ? (string) $cron['memory_limit'] : self::CRON_DEFAULT_MEMORY_LIMIT;
+                    $crondata .= (string) $cron['timing'] . " cd $path && php -d memory_limit=$memory_limit $consolecmd " . (string) $cron['symfony'] . " >> $log 2>&1\n";
+                }
+                elseif ((string) $cron['group'] and $path !== false) {
                     $memory_limit = (isset($cron['memory_limit'])) ? (string) $cron['memory_limit'] : self::CRON_DEFAULT_MEMORY_LIMIT;
                     $crondata .= (string) $cron['timing'] . " cd $path && php -d memory_limit=$memory_limit ezpublish/console ezpublish:legacy:script runcronjobs.php " . (string) $cron['group'] . " >> $log 2>&1\n";
                 }
@@ -296,7 +311,13 @@ class ClusterNode extends Resources\instance
     
     private function getLogfileName($cron)
     {
-        if((string) $cron['name'])
+        if((string) $cron['symfony'])
+        {
+            $name = preg_replace('/^([\w\:]+)(.*)/i', '${1}', (string)$cron['symfony']);
+            $name = preg_replace('/\:/i', '_', $name);
+            $log = CloudSDK::LOG_DIR . '/' . (string) $name . ".cron.log";
+        }
+        elseif((string) $cron['name'])
         {
             $log = CloudSDK::LOG_DIR . '/' . (string) $cron['name'] . ".cron.log";
         }
