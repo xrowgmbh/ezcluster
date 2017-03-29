@@ -43,7 +43,7 @@ install -m 755 -d %{buildroot}%{_datadir}/%{name}
 cp -R * $RPM_BUILD_ROOT%{_datadir}/%{name}
 install -m 777 -d %{buildroot}/var/www/sites
 chmod +x $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name}
-ln -s %{buildroot}%{_bindir}/%{name} $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name} 
+ln -s $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name} %{buildroot}%{_bindir}/%{name} 
 cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
 
 %files
