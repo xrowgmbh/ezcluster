@@ -22,14 +22,13 @@ Conflicts: mlocate
 Conflicts: mod_ssl
 Requires: httpd nfs-utils nfs4-acl-tools sudo autofs
 Requires: selinux-policy
-Requires: varnish >= 4.0
 Requires(pre): /usr/sbin/useradd
 Requires(postun): /usr/sbin/userdel
 
 BuildRoot: %{_tmppath}/%{name}
 BuildArch: noarch
 %description
-A rapid app setup tools
+A rapid web application setup tool
 
 %prep
 %autosetup -n %{name}-%{commit}
@@ -81,9 +80,6 @@ if [ "$1" -eq "1" ]; then
 #logrotate
 sed -i "s/weekly/daily/g" /etc/logrotate.conf
 sed -i "s/#compress/compress/g" /etc/logrotate.conf
-
-#sed -i "s/PACKAGE_SETUP=yes/PACKAGE_SETUP=no/g" /etc/sysconfig/cloud-init
-
 sed -i "s/^Defaults    requiretty/#Defaults    requiretty/g" /etc/sudoers
 
 systemctl enable ezcluster.service
@@ -95,10 +91,8 @@ rm -Rf /tmp/.compilation/
 %preun
 
 if [ "$1" -eq "0" ]; then
-   sed -i "s/locking_type = 3/locking_type = 1/g" /etc/lvm/lvm.conf
    sed -i "s/daily/weekly/g" /etc/logrotate.conf
    sed -i "s/compress/#compress/g" /etc/logrotate.conf   
-   sed -i "s/0.0.0.0/127.0.0.1/g" /usr/share/ezfind/etc/jetty.xml
    sed -i "s/^LogFormat \"%{X-Forwarded-For}i/LogFormat \"%h/g" /etc/httpd/conf/httpd.conf
    sed -i "s/^#Defaults    requiretty/Defaults    requiretty/g" /etc/sudoers
    systemctl stop ezcluster.service
