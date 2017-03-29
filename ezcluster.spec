@@ -14,8 +14,7 @@ Packager: Bjoern Dieding / xrow GmbH <bjoern@xrow.de>
 URL:            https://github.com/xrowgmbh/ezcluster
 Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{commit}.tar.gz
 
-Requires: yum
-Requires: composer
+BuildRequires: composer
 # mlocate will crawl /mnt/nas
 Conflicts: mlocate
 Conflicts: mod_ssl
