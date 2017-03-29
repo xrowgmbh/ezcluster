@@ -1,10 +1,9 @@
-%global commit      917a5e1a5df2e0e1e74da341dfed57c18dbe6c5d
-%global shortcommit %(c=%{commit}; echo ${c:0:7})
+%global shortcommit %(c=%{_commit}; echo ${c:0:7})
 
 Name: ezcluster
 Summary: The eZ Cluster of the xrow GmbH
 Version: 2.0
-Release: 0.%{shortcommit}%{?dist}.1
+Release: %{_buildnumber}.%{shortcommit}%{?dist}
 License: GPL
 Group: Applications/Webservice
 
@@ -12,7 +11,7 @@ Vendor: xrow GmbH
 Packager: Bjoern Dieding / xrow GmbH <bjoern@xrow.de>
 
 URL:            https://github.com/xrowgmbh/ezcluster
-Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{commit}.tar.gz
+Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{_commit}.tar.gz
 
 BuildRequires: centos-release-scl
 BuildRequires: scl-utils
