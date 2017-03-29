@@ -48,7 +48,12 @@ cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
 
 %files
 %defattr(644,root,root,755)
-%{_sysconfdir}/*
+%{_sysconfdir}/httpd/conf.d/xrow.conf
+%{_sysconfdir}/httpd/conf.d/%{name}.conf		
+%{_sysconfdir}/logrotate.d/%{name}		
+%{_sysconfdir}/profile.d/%{name}.sh		
+%{_sysconfdir}/ezcluster/%{name}.xml.dist		
+%{_sysconfdir}/httpd/sites/environment.conf		
 %dir %{_sysconfdir}/httpd/sites    
 %{_datadir}/*
 %{_bindir}/*
