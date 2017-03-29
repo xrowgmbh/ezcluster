@@ -36,8 +36,7 @@ A rapid web application setup tool
 %autosetup -n %{name}-%{commit}
 
 %build
-scl enable rh-php56 bash
-composer install
+/opt/rh/rh-php56/root/usr/bin/php composer install
 
 %install
 
