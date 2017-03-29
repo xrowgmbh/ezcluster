@@ -36,7 +36,7 @@ A rapid web application setup tool
 %autosetup -n %{name}-%{commit}
 
 %build
-/opt/rh/rh-php56/root/usr/bin/php composer install
+/opt/rh/rh-php56/root/usr/bin/php /usr/bin/composer install
 
 %install
 
