@@ -32,7 +32,7 @@ BuildArch: noarch
 A rapid web application setup tool
 
 %prep
-%autosetup -n %{name}-%{commit}
+%autosetup -n %{name}-%{_commit}
 
 %build
 php /usr/bin/composer install --ignore-platform-reqs
