@@ -54,6 +54,7 @@ cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
 %{_sysconfdir}/profile.d/%{name}.sh		
 %{_sysconfdir}/ezcluster/%{name}.xml.dist		
 %{_sysconfdir}/httpd/sites/environment.conf		
+%{_sysconfdir}/cloud/cloud.cfg.d/%{name}.cfg
 %dir %{_sysconfdir}/httpd/sites    
 %{_datadir}/*
 %{_bindir}/*
