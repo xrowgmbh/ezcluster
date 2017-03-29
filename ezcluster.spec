@@ -14,7 +14,6 @@ Packager: Bjoern Dieding / xrow GmbH <bjoern@xrow.de>
 URL:            https://github.com/xrowgmbh/ezcluster
 Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{commit}.tar.gz
 
-BuildRequires: libxslt libxslt-devel
 Requires: yum
 Requires: composer
 # mlocate will crawl /mnt/nas
