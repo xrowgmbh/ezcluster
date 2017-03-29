@@ -16,7 +16,7 @@ Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{commit}.tar.gz
 
 BuildRequires: centos-release-scl
 BuildRequires: scl-utils
-BuildRequires: /usr/bin/php
+BuildRequires: php-cli
 BuildRequires: epel-release
 BuildRequires: composer
 # mlocate will crawl /mnt/nas
