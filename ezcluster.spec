@@ -16,7 +16,7 @@ Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{commit}.tar.gz
 
 BuildRequires: centos-release-scl
 BuildRequires: scl-utils
-BuildRequires: /opt/rh/rh-php56/root/usr/bin/php
+BuildRequires: /usr/bin/php
 BuildRequires: epel-release
 BuildRequires: composer
 # mlocate will crawl /mnt/nas
@@ -36,7 +36,7 @@ A rapid web application setup tool
 %autosetup -n %{name}-%{commit}
 
 %build
-/opt/rh/rh-php56/root/usr/bin/php /usr/bin/composer install --ignore-platform-reqs
+php /usr/bin/composer install --ignore-platform-reqs
 
 %install
 
