@@ -14,8 +14,6 @@ Packager: Bjoern Dieding / xrow GmbH <bjoern@xrow.de>
 URL:            https://github.com/xrowgmbh/ezcluster
 Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{_commit}.tar.gz
 
-BuildRequires: centos-release-scl
-BuildRequires: scl-utils
 BuildRequires: php-cli
 BuildRequires: epel-release
 BuildRequires: composer
