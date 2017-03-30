@@ -316,13 +316,19 @@ class environment
     public function setup()
     {
         $fs = new \Symfony\Component\Filesystem\Filesystem();
-        
+
         if ( $fs->exists($this->dirtmp) ) {
             $fs->remove($this->dirtmp);
+            if ( $fs->exists($this->dirtmp ) ) {
+                throw new \Exception("Delete not successfull for " . $this->dirtmp);
+            }
         }
 
-        if ( $fs->exists($this->dirtmp . ".new" ) ) {
+        if ( $fs->exists($this->dir . ".new" ) ) {
             $fs->remove( $this->dir . ".new" );
+            if ( $fs->exists($this->dir . ".new" ) ) {
+                throw new \Exception("Delete not successfull for " . $this->dir);
+            }
         }
 
         if (! file_exists($this->dir)) {
@@ -442,10 +448,11 @@ class environment
         chown($this->dirtmp, CloudSDK::USER);
         chgrp($this->dirtmp, CloudSDK::GROUP);
         ClusterTools::mkdir($this->docroottmp, CloudSDK::USER, 0777);
+        
         try {
             $fs->rename( $this->dir, $this->dir. ".new" );
         }catch(\Exception $e){
-            $fs->chmod( $this->dir . ".new", 0777, null, true );
+            $fs->chmod( $this->dir . ".new", 0777, 0000, true );
             $fs->remove( $this->dir . ".new" );
             $fs->rename( $this->dir, $this->dir. ".new" );            
         }
@@ -453,7 +460,7 @@ class environment
         try {
             $fs->remove( $this->dir . ".new" );
         }catch(\Exception $e){
-            $fs->chmod( $this->dir . ".new", 0777, null, true );
+            $fs->chmod( $this->dir . ".new", 0777, 0000, true );
             $fs->remove( $this->dir . ".new" );
         }
     }
