@@ -42,6 +42,7 @@ install -m 755 -d %{buildroot}%{_bindir}
 install -m 755 -d %{buildroot}%{_datadir}/%{name}
 cp -R * $RPM_BUILD_ROOT%{_datadir}/%{name}
 install -m 777 -d %{buildroot}/var/www/sites
+install -m 777 -d %{buildroot}/var/log/ezcluster
 chmod +x $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name}
 ln -s ../..%{_datadir}/%{name}/%{name} %{buildroot}%{_bindir}/%{name} 
 cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
@@ -62,6 +63,7 @@ cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
 %attr(755, root, root) %{_datadir}/%{name}/bin/*
 %attr(755, root, root) %{_datadir}/%{name}/%{name}
 %attr(777, root, root) /var/www/sites
+%attr(777, root, root) /var/log/ezcluster
 %attr(644, root, root) %{_sysconfdir}/systemd/system/ezcluster.service
 %attr(440, root, root) %{_sysconfdir}/sudoers.d/ezcluster
 %doc README.md
