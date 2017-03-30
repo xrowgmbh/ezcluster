@@ -22,6 +22,7 @@ Conflicts: mlocate
 Conflicts: mod_ssl
 Requires: httpd nfs-utils nfs4-acl-tools sudo autofs
 Requires: selinux-policy
+Requires: cronie
 Requires(pre): /usr/sbin/useradd
 Requires(postun): /usr/sbin/userdel
 
