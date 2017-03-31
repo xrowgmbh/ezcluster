@@ -104,10 +104,10 @@ class environment
                     $this->parameters["BRANCH"] = $this->environment['branch'];
                 }
                 if ( $this->parameters["BRANCH"] ){
-                    $git_rev = $this->run("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " " . $this->parameters["BRANCH"]);
+                    $git_rev = $this->run("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " " . $this->parameters["BRANCH"], array(), '/home/'. CloudSDK::USER);
                 }
                 else {
-                    $git_rev = $this->run("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD");
+                    $git_rev = $this->run("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD", array(), '/home/'. CloudSDK::USER);
                 }
                 list( $this->parameters["REVISION"] ) = preg_split("/[\s,]+/", $git_rev, -1 );
             }
