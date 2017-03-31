@@ -1,4 +1,4 @@
-%global _commit 3168a1d3da1ae11dc2e850c74432224470724cb3
+%global _commit 48e3ca0c38cb1f8ce859c9075d160715bac4a3a5
 %global shortcommit %(c=%{_commit}; echo ${c:0:7})
 
 Name: ezcluster
