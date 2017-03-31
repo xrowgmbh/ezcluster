@@ -104,10 +104,10 @@ class environment
                     $this->parameters["BRANCH"] = $this->environment['branch'];
                 }
                 if ( $this->parameters["BRANCH"] ){
-                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " " . $this->parameters["BRANCH"] );
+                    $git_rev = $this->run("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " " . $this->parameters["BRANCH"]);
                 }
                 else {
-                    $git_rev = shell_exec("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD");
+                    $git_rev = $this->run("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD");
                 }
                 list( $this->parameters["REVISION"] ) = preg_split("/[\s,]+/", $git_rev, -1 );
             }
@@ -505,6 +505,8 @@ class environment
         $user = posix_getpwnam("root");
         posix_setgid($user['gid']);
         posix_setuid($user['uid']);
+
+        return $process->getOutput();
     }
 
     static function getList()
