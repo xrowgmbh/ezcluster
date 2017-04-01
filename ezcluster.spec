@@ -21,7 +21,8 @@ BuildRequires: mariadb
 # mlocate will crawl /mnt/nas
 Conflicts: mlocate
 Conflicts: mod_ssl
-Requires: httpd nfs-utils nfs4-acl-tools sudo autofs
+Requires: httpd
+Requires: nfs-utils nfs4-acl-tools sudo autofs
 Requires: selinux-policy
 Requires: cronie
 Requires(pre): /usr/sbin/useradd
@@ -64,7 +65,7 @@ cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
 %exclude %{_datadir}/bin
 %attr(755, root, root) %{_datadir}/%{name}/bin/*
 %attr(755, root, root) %{_datadir}/%{name}/%{name}
-%attr(777, root, root) /var/www/sites
+%attr(770, root, apache) /var/www/sites
 %attr(777, root, root) /var/log/ezcluster
 %attr(644, root, root) %{_sysconfdir}/systemd/system/ezcluster.service
 %attr(440, root, root) %{_sysconfdir}/sudoers.d/ezcluster
