@@ -63,6 +63,7 @@ cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
 %{_datadir}/*
 %{_bindir}/*
 %exclude %{_datadir}/bin
+%attr(777, root, root) %{_sysconfdir}/httpd/sites
 %attr(755, root, root) %{_datadir}/%{name}/bin/*
 %attr(755, root, root) %{_datadir}/%{name}/%{name}
 %attr(770, root, apache) /var/www/sites
