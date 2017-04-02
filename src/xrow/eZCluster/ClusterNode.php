@@ -207,7 +207,7 @@ class ClusterNode extends Resources\instance
         if (is_link("/var/www/html/index.php")) {
             unlink("/var/www/html/index.php");
         }
-        symlink("/usr/share/ezcluster/src/probe/index.php", "/var/www/html/index.php");
+        symlink("/usr/share/ezcluster/html/index.php", "/var/www/html/index.php");
     }
 
     public function setupMounts()
