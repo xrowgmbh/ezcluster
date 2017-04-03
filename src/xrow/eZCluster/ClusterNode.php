@@ -204,10 +204,6 @@ class ClusterNode extends Resources\instance
             mkdir(dirname(self::HTTP_CONFIG_FILE), 0755, true);
         }
         file_put_contents(self::HTTP_CONFIG_FILE, $t->process('vhost.ezt'));
-        if (is_link("/var/www/html/index.php")) {
-            unlink("/var/www/html/index.php");
-        }
-        symlink("/usr/share/ezcluster/html/index.php", "/var/www/html/index.php");
     }
 
     public function setupMounts()
