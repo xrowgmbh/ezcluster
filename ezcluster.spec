@@ -43,13 +43,14 @@ php /usr/bin/composer install --ignore-platform-reqs
 
 install -m 755 -d %{buildroot}%{_bindir}
 install -m 755 -d %{buildroot}%{_datadir}/%{name}
-cp -R * $RPM_BUILD_ROOT%{_datadir}/%{name}
+cp -R * %{buildroot}_datadir}/%{name}
 install -m 777 -d %{buildroot}/var/www/sites
+install -m 777 -d %{buildroot}/var/www/html
 install -m 777 -d %{buildroot}/var/log/ezcluster
-chmod +x $RPM_BUILD_ROOT%{_datadir}/%{name}/%{name}
+chmod +x %{buildroot}%{_datadir}/%{name}/%{name}
 ln -s ../..%{_datadir}/%{name}/%{name} %{buildroot}%{_bindir}/%{name} 
-cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
-cp html/index.php $RPM_BUILD_ROOT/var/www/html/index.php
+cp -R etc %{buildroot}%{_sysconfdir}
+cp html/index.php %{buildroot}/var/www/html/index.php
 
 %files
 %defattr(644,root,root,755)
