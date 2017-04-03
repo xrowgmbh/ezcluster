@@ -17,7 +17,6 @@ Source0:        https://github.com/xrowgmbh/ezcluster/archive/%{_commit}.tar.gz
 BuildRequires: php-cli
 BuildRequires: epel-release
 BuildRequires: composer
-BuildRequires: mariadb
 # mlocate will crawl /mnt/nas
 Conflicts: mlocate
 Conflicts: mod_ssl
