@@ -25,6 +25,7 @@ Requires: httpd
 Requires: nfs-utils nfs4-acl-tools sudo autofs
 Requires: selinux-policy
 Requires: cronie
+Requires: mariadb
 Requires(pre): /usr/sbin/useradd
 Requires(postun): /usr/sbin/userdel
 
