@@ -103,6 +103,10 @@ class environment
                 } else {
                     $this->parameters["BRANCH"] = $this->environment['branch'];
                 }
+                /* @TODO  [RuntimeException]                                                           
+                          Command '/usr/bin/git ls-remote git@gitlab.com:fvs/flossbachvonstorch.com.git
+                          master' failed with 'ssh_exchange_identification: Connection closed by
+                          remote host   
                 if ( $this->parameters["BRANCH"] ){
                     $git_rev = $this->run("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " " . $this->parameters["BRANCH"], array(), '/home/'. CloudSDK::USER);
                 }
@@ -110,6 +114,7 @@ class environment
                     $git_rev = $this->run("/usr/bin/git ls-remote " . $this->parameters["SCM"] . " HEAD", array(), '/home/'. CloudSDK::USER);
                 }
                 list( $this->parameters["REVISION"] ) = preg_split("/[\s,]+/", $git_rev, -1 );
+                */
             }
         }
         
