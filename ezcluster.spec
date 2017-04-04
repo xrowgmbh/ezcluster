@@ -51,6 +51,7 @@ ln -s ../..%{_datadir}/%{name}/%{name} %{buildroot}%{_bindir}/%{name}
 cp -R etc $RPM_BUILD_ROOT%{_sysconfdir}
 install -m 777 -d %{buildroot}/var/www/html
 cp html/index.php $RPM_BUILD_ROOT/var/www/html/index.php
+mkdir -p $RPM_BUILD_ROOT/mnt/storage
 
 %files
 %defattr(644,root,root,755)
@@ -73,6 +74,7 @@ cp html/index.php $RPM_BUILD_ROOT/var/www/html/index.php
 %attr(777, root, root) /var/log/ezcluster
 %attr(644, root, root) %{_sysconfdir}/systemd/system/ezcluster.service
 %attr(440, root, root) %{_sysconfdir}/sudoers.d/ezcluster
+%attr(775, root, apache) /mnt/storage
 %doc README.md
 
 %pre
