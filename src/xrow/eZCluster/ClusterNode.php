@@ -150,7 +150,8 @@ class ClusterNode extends Resources\instance
             "cache/**",
             "log/**",
             "webdav/**",
-            "autoload/**"
+            "autoload/**",
+            "storage/images/_aliases/**"
         );
         foreach ($excludes as $exclude) {
             $excludesRsync .= ' --exclude=' . escapeshellarg($exclude) . ' ';
