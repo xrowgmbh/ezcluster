@@ -41,13 +41,16 @@ class db extends Abstracts\xrowEC2Resource
 
     static public function migrateDatabase($dsnsource, $dsntarget, $session, $where = false)
     {
+        $source = self::translateDSN($dsnsource);
         if (! $session) {
-            $source = self::translateDSN($dsnsource);
             $target = self::translateDSN($dsntarget);
             $dumpname = "/var/tmp/dump." . $source['database'] .".sql.gz";
             $dump = "mysqldump --compress --default-character-set=utf8 --opt --single-transaction --add-drop-table --add-drop-database -h " . $source['hostspec'] . " -u " . $source['username'];
             if (! empty($source['password'])) {
                 $dump .= " -p'" . $source['password'];
+            }
+            if (! empty($source['port'])) {
+                $dump .= " --port=" . $source['port'];
             }
             $dump .= "' --databases " . $source['database'] . " | gzip > " . $dumpname;
             system($dump);
@@ -63,7 +66,6 @@ class db extends Abstracts\xrowEC2Resource
             unlink( $dumpname );
         } else {
             $exec = $session->getExec();
-            $source = db::translateDSN($dsnsource);
             $dumpname = "/var/tmp/dump." . $source['database'] .".sql.gz";
             $dump = "mysqldump --compress --default-character-set=utf8 --opt --single-transaction --add-drop-table --add-drop-database -h " . $source['hostspec'];
             if (!empty($source['username'])) {
@@ -71,6 +73,9 @@ class db extends Abstracts\xrowEC2Resource
             }
             if (!empty($source['password'])) {
                 $dump .= " -p'" . $source['password']."'";
+            }
+            if (! empty($source['port'])) {
+                $dump .= " --port=" . $source['port'];
             }
             if ( $where )
             {
@@ -84,7 +89,6 @@ class db extends Abstracts\xrowEC2Resource
                 echo "There was a problem executing mysqldump on target server";
                 throw $e;
             }
-            
             $exec->run($dump);
             $sftp = $session->getSftp();
             $sftp->receive( $dumpname, $dumpname);
