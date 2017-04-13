@@ -213,7 +213,7 @@ class ClusterNode extends Resources\instance
         file_put_contents( "/etc/auto.master.d/ezcluster.autofs", "/nfs   ".self::AUTOFS_FILE."\n" ); 
         $result = self::$config->xpath($xp);
         $mounts = array();
-        if (is_array($result)) {
+        if (is_array($result) and !empty($result) ) {
             foreach ($result as $key => $environment) {
                 $name = (string) $environment['name'];
                 if (isset($environment->storage['mount'])) {
@@ -224,12 +224,12 @@ class ClusterNode extends Resources\instance
                     }
                 }
             }
+            file_put_contents( self::AUTOFS_FILE, join( $mounts, "\n" ) . "\n" );
+            chmod( self::AUTOFS_FILE, 0644 );
+            chown( self::AUTOFS_FILE, "root" );
+            chgrp( self::AUTOFS_FILE, "root" );
+            system("systemctl restart autofs");
         }
-        file_put_contents( self::AUTOFS_FILE, join( $mounts, "\n" ) . "\n" );
-        chmod( self::AUTOFS_FILE, 0644 );
-        chown( self::AUTOFS_FILE, "root" );
-        chgrp( self::AUTOFS_FILE, "root" );
-        system("systemctl restart autofs");
     }
 
     public function setupCrons()
