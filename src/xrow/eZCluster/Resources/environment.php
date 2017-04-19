@@ -157,7 +157,13 @@ class environment
             $this->parameters["DATABASE_HOST"] = $dbdetails["hostspec"];
             $this->parameters["DATABASE_USER"] = $dbdetails["username"];
             $this->parameters["DATABASE_DRIVER"] = "pdo_mysql";
-            $this->parameters["DATABASE_PORT"] = "3306";
+            if($dbdetails["port"] == false)
+            {
+                $this->parameters["DATABASE_PORT"] = "3306";
+            }
+            else {
+                $this->parameters["DATABASE_PORT"] = $dbdetails["port"];
+            }
             $this->parameters["DATABASE_PASSWORD"] = $dbdetails["password"];
         }
         $this->parameters["AWS_KEY"] = (string) CloudSDK::$config['access_key'];
