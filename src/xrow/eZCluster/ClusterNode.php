@@ -162,7 +162,7 @@ class ClusterNode extends Resources\instance
             }
             $command = 'rsync -avztr --no-p --no-t --no-super --no-o --no-g --chmod=Da+xwr,Fa+wr --copy-links --keep-dirlinks ';
             if ( !isset( $connection['pass'] ) ){
-                $command .= '--rsh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 22" ';
+                $command .= '--rsh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 22" ';
             }else{
                 $command .= '--rsh="/usr/bin/sshpass -p '.$connection['pass'].' ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -l '.$connection['user'].'"';
             }
