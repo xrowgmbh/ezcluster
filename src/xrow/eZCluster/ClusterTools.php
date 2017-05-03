@@ -131,6 +131,7 @@ class ClusterTools
         {
             chown( $dir, $user );
             chgrp( $dir, $group );
+            chmod( $dir, $permissions );
         }
     }
 

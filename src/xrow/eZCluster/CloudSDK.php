@@ -75,6 +75,7 @@ class CloudSDK
         {
             throw new \Exception( "You need to be root to execute the command." );
         }
+        ClusterTools::mkdir( self::LOG_DIR, "root", 0777 );
         
         self::$ezcTemplateConfiguration = new \ezcTemplateConfiguration(dirname(__FILE__) . DIRECTORY_SEPARATOR . "templates", sys_get_temp_dir() . "/.compilation", new \ezcTemplateNoContext());
         self::$ezcTemplateConfiguration->checkModifiedTemplates = false;
