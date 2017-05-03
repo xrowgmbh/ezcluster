@@ -3,7 +3,7 @@
 
 Name: ezcluster
 Summary: The eZ Cluster of the xrow GmbH
-Version: 2.2.10
+Version: 2.2.11
 Release: 1.%{shortcommit}%{?dist}
 License: GPL
 Group: Applications/Webservice
