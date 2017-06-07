@@ -1,9 +1,9 @@
-%global _commit ba3a69eb39c073c8899bcffea342654c4e721831
+%global _commit d709f8ea751013147ea5d869f114e196777c0cb3
 %global shortcommit %(c=%{_commit}; echo ${c:0:7})
 
 Name: ezcluster
 Summary: The eZ Cluster of the xrow GmbH
-Version: 2.2.11
+Version: 2.2.12
 Release: 1.%{shortcommit}%{?dist}
 License: GPL
 Group: Applications/Webservice
