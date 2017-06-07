@@ -87,14 +87,14 @@ class eZClusterCommand extends Command
                 case 'bootstrap':
                     
                     if (isset($args[1])) {
+                        ClusterNode::getInstance()->setupCrons();
                         $environment = new Environment($args[1]);
                         $environment->setup();
-                        ClusterNode::getInstance()->setupCrons();
                     } else {
                         foreach (Environment::getList() as $environment) {
                             $environment->clean();
-                            $environment->setup();
                             ClusterNode::getInstance()->setupCrons();
+                            $environment->setup();
                         }
                     }
                     break;

@@ -500,7 +500,7 @@ class environment
             $env['PATH'] = CloudSDK::path();
             $process->setEnv($env);
         }
-        $process->setPty(true); // https://github.com/composer/composer/issues/5044
+
         $process->run(function ($type, $buffer) {
             if (Process::ERR === $type) {
                 echo $buffer;
