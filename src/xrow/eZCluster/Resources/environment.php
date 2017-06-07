@@ -490,6 +490,7 @@ class environment
         posix_setgid($user['gid']);
         posix_setuid($user['uid']);
         $process = new Process($command);
+        $process->inheritEnvironmentVariables();
         if ($wd) {
             $process->setWorkingDirectory($wd);
         }
