@@ -340,6 +340,7 @@ class ClusterNode extends Resources\instance
         }
         $this->setupDatabase();
         $this->setupHTTP();
+        ClusterNode::getInstance()->setupCrons();
     }
 
     public function stopServices()
