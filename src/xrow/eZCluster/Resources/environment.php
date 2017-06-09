@@ -478,7 +478,6 @@ class environment
 
     function run($command, $env = array(), $wd = null)
     {
-        $user = posix_getpwnam(CloudSDK::USER);
         $fs = new Filesystem();
         if ( $fs->exists( '/vagrant/id_rsa' ) ){
             $idfile = '/home/'. CloudSDK::USER . "/.ssh/id_rsa";
@@ -487,38 +486,54 @@ class environment
             $fs->chgrp( $idfile, CloudSDK::GROUP);
             $fs->chmod( $idfile, 0600);
         }
-        posix_setgid($user['gid']);
-        posix_setuid($user['uid']);
-        $process = new Process($command);
-        $process->inheritEnvironmentVariables();
-        if ($wd) {
-            $process->setWorkingDirectory($wd);
-        }
-        $process->setTimeout(24*3600);
-        $process->setIdleTimeout(24*3600);
-        if ( !empty($env) )
-        {
-            $env['PATH'] = CloudSDK::path();
-            $process->setEnv($env);
-        }
 
-        $process->run(function ($type, $buffer) {
-            if (Process::ERR === $type) {
-                echo $buffer;
-            } else {
-                echo $buffer;
+        $pid = pcntl_fork();
+        if ($pid == -1) {
+            throw new Exception("Couldn't fork a new process");
+        } else if ($pid) {
+            pcntl_wait($status);
+            return $status; 
+        } else {
+            $user = posix_getpwnam(CloudSDK::USER);
+
+            posix_setgid($user['gid']);
+            posix_setuid($user['uid']);
+            $process = new Process($command);
+            $process->inheritEnvironmentVariables();
+            if ($wd) {
+                $process->setWorkingDirectory($wd);
             }
-        });
-        if (! $process->isSuccessful()) {
-            $out = $process->getErrorOutput();
-            throw new \RuntimeException( "Command '$command' failed with '" . $out . "'" );
+
+            $process->setTimeout(24*3600);
+            $process->setIdleTimeout(24*3600);
+
+            if ( !empty($env) )
+            {
+                $env['PATH'] = CloudSDK::path();
+                $process->setEnv($env);
+            }
+
+            $process->run(function ($type, $buffer) {
+                if (Process::ERR === $type) {
+                    echo $buffer;
+                } else {
+                    echo $buffer;
+                }
+            });
+
+            if (! $process->isSuccessful()) {
+                $out = $process->getErrorOutput();
+                throw new \RuntimeException( "Command '$command' failed with '" . $out . "'" );
+            }
+
+            $user = posix_getpwnam("root");
+            posix_setgid($user['gid']);
+            posix_setuid($user['uid']);
+
+            $process->getOutput();
+            exit();
         }
         
-        $user = posix_getpwnam("root");
-        posix_setgid($user['gid']);
-        posix_setuid($user['uid']);
-
-        return $process->getOutput();
     }
 
     static function getList()
