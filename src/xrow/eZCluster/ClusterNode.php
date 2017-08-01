@@ -64,14 +64,7 @@ class ClusterNode extends Resources\instance
     }
     public function setupDatabase()
     {
-        $xp = "/aws/cluster/environment/rds";
-        $result = self::$config->xpath($xp);
-        if (is_array($result) and count($result) > 0) {
-            $masterdsn = (string) $result[0]['dsn'];
-            $masterdetails = eZCluster/Resources/db::translateDSN($masterdsn);
-        }
-        
-        $xp = "/aws/cluster/instance[role = 'database' and @name='" . $this->name() . "'] | /aws/cluster/instance[role = 'dev' and @name='" . $this->name() . "']";
+        $xp = "/aws/cluster/instance[role = 'database']";
         
         $result = self::$config->xpath($xp);
         if (is_array($result) and count($result) > 0) {
