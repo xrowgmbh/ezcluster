@@ -492,7 +492,11 @@ class environment
             throw new Exception("Couldn't fork a new process");
         } else if ($pid) {
             pcntl_wait($status);
-            return $status; 
+            if ( $status === 0 ){ 
+                return true;
+            }else{
+                throw new \RuntimeException( "Command '$command' failed." );
+            }
         } else {
             $user = posix_getpwnam(CloudSDK::USER);
 
