@@ -4,8 +4,9 @@ namespace xrow\eZCluster\Resources;
 use xrow\eZCluster\Resources;
 use xrow\eZCluster\Abstracts;
 use xrow\eZCluster;
-use \ezcDbFactory;
 use Ssh;
+use \ezcDbFactory;
+use \ezcDbInstance;
 
 class db extends Abstracts\xrowEC2Resource
 {
@@ -107,9 +108,16 @@ class db extends Abstracts\xrowEC2Resource
         }
     }
 
-    public static function initDB($dsn, $dbmaster)
+    public static function initDB($dsn)
     {
-
+        $masterdetails = ezcDbFactory::parseDSN($dsn);
+        try {
+            $dbmaster = ezcDbFactory::create($masterdetails);
+        } catch (\Exception $e) {
+            return false;
+        }
+        ezcDbInstance::set($dbmaster);
+        
         $dbmaster->query("SET NAMES utf8");
         $rows = $dbmaster->query('SHOW DATABASES');
         $dbs_exists = array();
@@ -128,10 +136,7 @@ class db extends Abstracts\xrowEC2Resource
             $GLOBALS["database"]["users"][$dbdetails['username']] = $dbdetails['password'];
         }
         if( $GLOBALS["database"]["users"][$dbdetails['username']] != $dbdetails['password'] ){
-        	throw new \Exception( "Database user " . $dbdetails['username'] . " with different password found." );
-        }
-        if (! in_array($dbdetails['database'], $dbs_exists)) {
-            $dbmaster->query('CREATE DATABASE IF NOT EXISTS ' . $dbdetails['database'] . ' CHARACTER SET utf8 COLLATE utf8_general_ci');
+            throw new \Exception( "Database user " . $dbdetails['username'] . " with different password found." );
         }
 
         //test if user has access else grant
@@ -141,23 +146,34 @@ class db extends Abstracts\xrowEC2Resource
             $grants = false;
         }
         if ( is_object( $grants ) and $grants->rowCount() > 0 ){
-        	foreach( $grants->fetchAll() as $grant ){
-        	    $match = false;
-        		if ( isset( $grant['grants for ' .  $dbdetails['username'] . '@%'] ) and $grant['grants for ' .  $dbdetails['username'] . '@%'] == "GRANT ALL PRIVILIEGES ON `" . $dbdetails['database'] . "`.* TO " . $dbdetails['username'] . "@'%'" ){
-        			$match = true;
-        		}
-        		$grants = false;
-        	}
-        	if (!$match){
-        	    $grants = false;
-        	}
+            foreach( $grants->fetchAll() as $grant ){
+                $match = false;
+                if ( isset( $grant['grants for ' .  $dbdetails['username'] . '@%'] ) and $grant['grants for ' .  $dbdetails['username'] . '@%'] == "GRANT ALL PRIVILIEGES ON `" . $dbdetails['database'] . "`.* TO " . $dbdetails['username'] . "@'%'" ){
+                    $match = true;
+                }
+                $grants = false;
+            }
+            if (!$match){
+                $grants = false;
+            }
         }
         if( $grants === false or ( is_object( $grants ) and $grants->rowCount() === 0 ) )
         {
+            $rootdsn = 'mysql://root@localhost';
+            $rootdetails = ezcDbFactory::parseDSN($rootdsn);
+            try {
+                $dbroot = ezcDbFactory::create($rootdetails);
+            } catch (\Exception $e) {
+                return false;
+            }
+            ezcDbInstance::set($dbmaster);
             $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'%' IDENTIFIED BY '" . $dbdetails['password'] . "'";
-            $dbmaster->query($grant);
+            $dbroot->query($grant);
             $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'localhost' IDENTIFIED BY '" . $dbdetails['password'] . "'";
-            $dbmaster->query($grant);
+            $dbroot->query($grant);
+        }
+        if (! in_array($dbdetails['database'], $dbs_exists)) {
+            $dbmaster->query('CREATE DATABASE IF NOT EXISTS ' . $dbdetails['database'] . ' CHARACTER SET utf8 COLLATE utf8_general_ci');
         }
         // test DB
         if ( $dbdetails['hostspec'] == "localhost" ){

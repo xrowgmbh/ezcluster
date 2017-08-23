@@ -8,8 +8,6 @@ use xrow\eZCluster\Resources\db;
 use xrow\eZCluster\Resources\instance;
 use xrow\eZCluster\Resources;
 use Ssh;
-use \ezcDbFactory;
-use \ezcDbInstance;
 use xrow\eZCluster\Resources\environment;
 
 class ClusterNode extends Resources\instance
@@ -64,35 +62,16 @@ class ClusterNode extends Resources\instance
     }
     public function setupDatabase()
     {
-        $xp = "/aws/cluster/instance[role = 'database']";
-        
+        $xp = "/aws/cluster/environment/database[@dsn]";
         $result = self::$config->xpath($xp);
-        if (is_array($result) and count($result) > 0) {
-            $masterdsn = 'mysql://root@localhost';
-            $masterdetails = ezcDbFactory::parseDSN($masterdsn);
-        }
-        if (! isset($masterdetails)) {
-            return false;
-        }
-        try {
-            $dbmaster = ezcDbFactory::create($masterdetails);
-        } catch (\Exception $e) {
-            return false;
-        }
-        ezcDbInstance::set($dbmaster);
         
-        if ($dbmaster) {
-            $xp = "/aws/cluster/environment/database[@dsn]";
-            $result = self::$config->xpath($xp);
-            
-            foreach ($result as $db) {
-                db::initDB((string) $db['dsn'], $dbmaster);
-            }
-            $xp = "/aws/cluster/environment/storage[@dsn]";
-            $result = self::$config->xpath($xp);
-            foreach ($result as $db) {
-                db::initDB((string) $db['dsn'], $dbmaster);
-            }
+        foreach ($result as $db) {
+            db::initDB((string) $db['dsn'] );
+        }
+        $xp = "/aws/cluster/environment/storage[@dsn]";
+        $result = self::$config->xpath($xp);
+        foreach ($result as $db) {
+            db::initDB((string) $db['dsn'] );
         }
     }
 
