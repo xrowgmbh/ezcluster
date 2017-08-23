@@ -110,55 +110,11 @@ class db extends Abstracts\xrowEC2Resource
 
     public static function initDB($dsn)
     {
-        $masterdetails = ezcDbFactory::parseDSN($dsn);
+        $dbdetails= ezcDbFactory::parseDSN($dsn);
         try {
-            $dbmaster = ezcDbFactory::create($masterdetails);
+            $dbmaster = ezcDbFactory::create($dbdetails);
         } catch (\Exception $e) {
-            return false;
-        }
-        ezcDbInstance::set($dbmaster);
-        
-        $dbmaster->query("SET NAMES utf8");
-        $rows = $dbmaster->query('SHOW DATABASES');
-        $dbs_exists = array();
-        foreach ($rows as $row) {
-            if (! in_array($row, array(
-                'mysql',
-                'information_schema'
-            ))) {
-                $dbs_exists[] = $row['database'];
-            }
-        }
-        
-        $dbdetails = ezcDbFactory::parseDSN($dsn);
-        $dbdetails['database'] = str_replace( ".", "_", $dbdetails['database']);
-        if ( !isset( $GLOBALS["database"]["users"][$dbdetails['username']] ) ){
-            $GLOBALS["database"]["users"][$dbdetails['username']] = $dbdetails['password'];
-        }
-        if( $GLOBALS["database"]["users"][$dbdetails['username']] != $dbdetails['password'] ){
-            throw new \Exception( "Database user " . $dbdetails['username'] . " with different password found." );
-        }
-
-        //test if user has access else grant
-        try {
-            $grants = $dbmaster->query('SHOW GRANTS FOR ' . $dbdetails['username']);
-        } catch (\Exception $e) {
-            $grants = false;
-        }
-        if ( is_object( $grants ) and $grants->rowCount() > 0 ){
-            foreach( $grants->fetchAll() as $grant ){
-                $match = false;
-                if ( isset( $grant['grants for ' .  $dbdetails['username'] . '@%'] ) and $grant['grants for ' .  $dbdetails['username'] . '@%'] == "GRANT ALL PRIVILIEGES ON `" . $dbdetails['database'] . "`.* TO " . $dbdetails['username'] . "@'%'" ){
-                    $match = true;
-                }
-                $grants = false;
-            }
-            if (!$match){
-                $grants = false;
-            }
-        }
-        if( $grants === false or ( is_object( $grants ) and $grants->rowCount() === 0 ) )
-        {
+            
             $rootdsn = 'mysql://root@localhost';
             $rootdetails = ezcDbFactory::parseDSN($rootdsn);
             try {
@@ -166,21 +122,72 @@ class db extends Abstracts\xrowEC2Resource
             } catch (\Exception $e) {
                 return false;
             }
-            ezcDbInstance::set($dbmaster);
-            $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'%' IDENTIFIED BY '" . $dbdetails['password'] . "'";
-            $dbroot->query($grant);
-            $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'localhost' IDENTIFIED BY '" . $dbdetails['password'] . "'";
-            $dbroot->query($grant);
+            $dbdetails = ezcDbFactory::parseDSN($dsn);
+            $dbdetails['database'] = str_replace( ".", "_", $dbdetails['database']);
+            if ( !isset( $GLOBALS["database"]["users"][$dbdetails['username']] ) ){
+                $GLOBALS["database"]["users"][$dbdetails['username']] = $dbdetails['password'];
+            }
+            if( $GLOBALS["database"]["users"][$dbdetails['username']] != $dbdetails['password'] ){
+                throw new \Exception( "Database user " . $dbdetails['username'] . " with different password found." );
+            }
+            
+            //test if user has access else grant
+            try {
+                $grants = $dbmaster->query('SHOW GRANTS FOR ' . $dbdetails['username']);
+            } catch (\Exception $e) {
+                $grants = false;
+            }
+            if ( is_object( $grants ) and $grants->rowCount() > 0 ){
+                foreach( $grants->fetchAll() as $grant ){
+                    $match = false;
+                    if ( isset( $grant['grants for ' .  $dbdetails['username'] . '@%'] ) and $grant['grants for ' .  $dbdetails['username'] . '@%'] == "GRANT ALL PRIVILIEGES ON `" . $dbdetails['database'] . "`.* TO " . $dbdetails['username'] . "@'%'" ){
+                        $match = true;
+                    }
+                    $grants = false;
+                }
+                if (!$match){
+                    $grants = false;
+                }
+            }
+            if( $grants === false or ( is_object( $grants ) and $grants->rowCount() === 0 ) )
+            {
+                ezcDbInstance::set($dbroot);
+                $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'%' IDENTIFIED BY '" . $dbdetails['password'] . "'";
+                $dbroot->query($grant);
+                $grant = 'GRANT ALL ON ' . $dbdetails['database'] . '.* TO ' . $dbdetails['username'] . "@'localhost' IDENTIFIED BY '" . $dbdetails['password'] . "'";
+                $dbroot->query($grant);
+            }
+
+            $dbroot->query("SET NAMES utf8");
+            $rows = $dbroot->query('SHOW DATABASES');
+            $dbs_exists = array();
+            foreach ($rows as $row) {
+                if (! in_array($row, array(
+                    'mysql',
+                    'information_schema'
+                ))) {
+                    $dbs_exists[] = $row['database'];
+                }
+            }
+            if (! in_array($dbdetails['database'], $dbs_exists)) {
+                $dbroot->query('CREATE DATABASE IF NOT EXISTS ' . $dbdetails['database'] . ' CHARACTER SET utf8 COLLATE utf8_general_ci');
+            }
         }
-        if (! in_array($dbdetails['database'], $dbs_exists)) {
-            $dbmaster->query('CREATE DATABASE IF NOT EXISTS ' . $dbdetails['database'] . ' CHARACTER SET utf8 COLLATE utf8_general_ci');
+        try {
+            $dbmaster = ezcDbFactory::create($dbdetails);
+        } catch (Exception $e) {
+            echo "can`t connect to $dsn";
+            return false;
         }
+
+        ezcDbInstance::set($dbmaster);
+        
         // test DB
         if ( $dbdetails['hostspec'] == "localhost" ){
             $db = ezcDbFactory::create($dbdetails);
             $db->query('SHOW TABLES');
-            
         }
+
     }
 
     public static function translateDSN($dsn)
