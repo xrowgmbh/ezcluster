@@ -32,7 +32,15 @@ class CloudSDK
     );
     static function path()
     {
-        if ( file_exists("/opt/rh/rh-php56/root/usr/bin/php") )
+        if ( file_exists("/opt/rh/rh-php71/root/usr/bin/php") )
+        {
+            return "/opt/rh/rh-php71/root/usr/bin:/opt/rh/rh-php71/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
+        }
+        elseif ( file_exists("/opt/rh/rh-php70/root/usr/bin/php") )
+        {
+            return "/opt/rh/rh-php70/root/usr/bin:/opt/rh/rh-php70/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
+        }
+        elseif ( file_exists("/opt/rh/rh-php56/root/usr/bin/php") )
         {
             return "/opt/rh/rh-php56/root/usr/bin:/opt/rh/rh-php56/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
         }
