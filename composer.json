@@ -2,6 +2,7 @@
     "require": {
         "symfony/symfony": "^3.2",
         "doctrine/orm": "^2.5",
+        "doctrine/dbal": "~2.5.13",
         "symfony/swiftmailer-bundle": "^2.3",
         "doctrine/doctrine-bundle": "~1.6.13",
         "symfony/monolog-bundle": "^3.0",
