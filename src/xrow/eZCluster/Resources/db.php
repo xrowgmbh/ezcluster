@@ -133,7 +133,7 @@ class db extends Abstracts\xrowEC2Resource
             
             //test if user has access else grant
             try {
-                $grants = $dbmaster->query('SHOW GRANTS FOR ' . $dbdetails['username']);
+                $grants = $dbroot->query('SHOW GRANTS FOR ' . $dbdetails['username']);
             } catch (\Exception $e) {
                 $grants = false;
             }
