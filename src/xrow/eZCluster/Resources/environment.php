@@ -474,6 +474,11 @@ class environment
             $fs->chmod( $this->dir . ".new", 0777, 0000, true );
             $fs->remove( $this->dir . ".new" );
         }
+
+        # Clear composer cache to save some space when building a Docker image
+        if(file_exists("/.dockerenv")) {
+            $this->run("composer clear-cache");
+        }
     }
 
     function run($command, $env = array(), $wd = null)
