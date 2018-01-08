@@ -1,9 +1,9 @@
-/var/www/sites/*/cron.log {
+ /var/log/ezcluster/*.cron.log {
+        daily
         size 5M
         missingok
         rotate 10
         compress
-        create 640 ec2-user apache
         delaycompress
         copytruncate
 }
