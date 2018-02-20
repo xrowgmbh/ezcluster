@@ -17,7 +17,11 @@
         "zetacomponents/database": "*",
         "zetacomponents/system-information": "*",
         "zetacomponents/url": "*",
-        "herzult/php-ssh": "~1.1.0"
+        "herzult/php-ssh": "~1.1.0",
+        "doctrine/inflector": "1.1",
+        "doctrine/instantiator": "1.0.5",
+        "doctrine/collections": "1.4.0",
+        "twig/twig": "1.35.0"
     },
     "autoload": {
         "psr-4": {
