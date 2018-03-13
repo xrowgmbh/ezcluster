@@ -475,9 +475,12 @@ class environment
             $fs->remove( $this->dir . ".new" );
         }
 
-        # Clear composer cache to save some space when building a Docker image
+        # Clear composer and npm cache to save some space when building a Docker image
         if(file_exists("/.dockerenv")) {
-            $this->run("composer clear-cache");
+            if(file_exists("/usr/bin/npm")) {
+                $this->run("npm cache clear", $this->parameters);
+            }
+            $this->run("composer clear-cache", $this->parameters);
         }
     }
 
