@@ -147,6 +147,9 @@ class ClusterNode extends Resources\instance
         } elseif (file_exists($environment->dir . "/" . "ezpublish/console")) {
             $environment->run("php ezpublish/console --env=prod cache:clear", array(), $environment->dir );
             $environment->run("php ezpublish/console --env=dev cache:clear", array(), $environment->dir );
+        } elseif (file_exists($environment->dir . "/" . "bin/console")) {
+            $environment->run("php bin/console --env=prod cache:clear", array(), $environment->dir );
+            $environment->run("php bin/console --env=dev cache:clear", array(), $environment->dir );
         } elseif (file_exists($environment->dir . "/" . "app/console")) {
             $environment->run("php app/console --env=prod cache:clear", array(), $environment->dir );
             $environment->run("php app/console --env=dev cache:clear", array(), $environment->dir );
