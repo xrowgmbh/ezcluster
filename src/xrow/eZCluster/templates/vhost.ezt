@@ -1,39 +1,3 @@
-
-<VirtualHost *:8080>
-
-ServerAdmin root@localhost
-ServerName elasticsearch.localhost
-ServerAlias elasticsearch.*
-ServerAlias kibana.*
-DocumentRoot /var/www/kibana
-<Directory />
-Options FollowSymLinks
-AllowOverride None
-</Directory>
-<Directory /var/www/kibana>
-Options -Indexes -MultiViews
-AllowOverride all
-Order allow,deny
-allow from all
-</Directory>
-
-# Set global proxy timeouts
-<Proxy http://localhost:9200>
-ProxySet connectiontimeout=5 timeout=90
-</Proxy>
-
-
-RewriteEngine On
-
-#RewriteCond %\{HTTPS\} off
-#RewriteRule (.*) https://%\{HTTP_HOST\}%\{REQUEST_URI\}
-
-RewriteRule ^(/_aliases|.*/_search|.*/_mapping)$ http://localhost:9200/$1 [P]
-RewriteRule ^(/kibana-int/dashboard/|/kibana-int/temp).*$ http://localhost:9200/$1 [P]
-
-</VirtualHost>
-
-
 {use $vhosts}
 
 {foreach $vhosts as $vhost}
