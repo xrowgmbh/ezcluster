@@ -175,7 +175,7 @@ class db extends Abstracts\xrowEC2Resource
         }
         try {
             $dbmaster = ezcDbFactory::create($dbdetails);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo "can`t connect to $dsn";
             return false;
         }
